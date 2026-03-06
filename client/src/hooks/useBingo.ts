@@ -48,6 +48,13 @@ export function useSync() {
   });
 }
 
+export function useLatestDraws(count: number = 10) {
+  return trpc.bingo.history.useQuery(
+    { page: 1, pageSize: count },
+    { refetchInterval: 60_000, staleTime: 30_000 }
+  );
+}
+
 export function useHistory(page: number = 1, pageSize: number = 20, date?: string) {
   return trpc.bingo.history.useQuery(
     { page, pageSize, date },
