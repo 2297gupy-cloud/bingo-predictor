@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useFrequency, useConsecutive, useRepeatedTriples } from "@/hooks/useBingo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Repeat, Flame, Snowflake, Layers } from "lucide-react";
+import { Loader2, Repeat, Flame, Snowflake, Layers, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WINDOW_OPTIONS = [1, 2, 3, 5, 10, 15, 20] as const;
@@ -26,29 +26,38 @@ export default function StatsTab() {
     <div className="space-y-4">
       {/* Window control - button style */}
       <Card className="neon-border bg-card">
-        <CardContent className="pt-5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-muted-foreground">分析區間</span>
-            <span className="text-xs text-muted-foreground">
-              分析最近 <span className="font-mono-num font-bold text-neon-blue">{window}</span> 期
-            </span>
+        <CardContent className="pt-4 sm:pt-5 pb-3 sm:pb-4">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neon-blue" />
+              <span className="text-xs sm:text-sm font-medium text-foreground">分析區間</span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground">
+              <span>分析最近</span>
+              <span className="font-mono-num font-bold text-neon-orange">{window}</span>
+              <span>期</span>
+            </div>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-1 sm:gap-1.5 flex-wrap">
             {WINDOW_OPTIONS.map(opt => (
               <button
                 key={opt}
                 onClick={() => setWindow(opt)}
                 className={cn(
-                  "px-3 py-1.5 rounded-md text-sm font-mono-num font-bold transition-all",
+                  "relative flex-1 min-w-[2.5rem] sm:min-w-[3rem] rounded-lg border px-1.5 sm:px-2 py-1.5 sm:py-2 text-center text-xs sm:text-sm font-mono-num font-medium transition-all",
                   window === opt
-                    ? "bg-neon-blue text-white shadow-[0_0_12px_oklch(0.7_0.15_250)]"
-                    : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    ? "border-neon-orange/60 bg-neon-orange/15 text-neon-orange shadow-[0_0_8px_rgba(255,160,50,0.2)]"
+                    : "border-border/50 text-muted-foreground hover:border-neon-orange/40 hover:text-foreground hover:bg-neon-orange/5"
                 )}
               >
-                {opt}期
+                {opt}
+                <span className="text-[10px] ml-0.5 opacity-70">期</span>
               </button>
             ))}
           </div>
+          <p className="mt-1.5 sm:mt-2.5 text-[10px] sm:text-[11px] text-muted-foreground/60">
+            選擇較少期數可觀察近期趨勢，較多期數可分析長期分布
+          </p>
         </CardContent>
       </Card>
 
