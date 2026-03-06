@@ -106,19 +106,19 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
         </div>
 
         {/* Tab navigation */}
-        <nav className="-mb-px flex gap-1 overflow-x-auto pb-0 scrollbar-none">
+        <nav className="-mb-px flex gap-0 overflow-x-auto pb-0 scrollbar-none">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-all",
+                "flex shrink-0 items-center gap-1 border-b-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-all",
                 activeTab === tab.id
                   ? "border-neon-blue text-neon-blue"
                   : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
               )}
             >
-              <span className="text-base">{tab.icon}</span>
+              <span className="text-sm sm:text-base">{tab.icon}</span>
               <span>{tab.label}</span>
             </button>
           ))}
