@@ -30,7 +30,7 @@ const PICK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 function PredictBall({ number, delay }: { number: number; delay: number }) {
   return (
     <div
-      className="flex items-center justify-center w-12 h-12 rounded-full font-mono-num text-base font-bold text-white animate-float"
+      className="flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full font-mono-num text-sm sm:text-base font-bold text-white animate-float"
       style={{
         background: "radial-gradient(circle at 35% 35%, #ff6b6b, #e53e3e, #c53030)",
         boxShadow: "0 0 14px rgba(239, 68, 68, 0.55), 0 0 5px rgba(239, 68, 68, 0.3)",
@@ -190,7 +190,7 @@ export default function PredictTab() {
 
               {/* 預測號碼球體 — 紅色明亮漸層，整體置中縮排 */}
               <div className="flex justify-center">
-                <div className="inline-flex flex-wrap justify-center gap-2.5 px-3 py-3 rounded-xl bg-secondary/30 border border-border/20">
+                <div className="inline-flex flex-wrap justify-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border border-border/20">
                   {data.numbers.map((num, idx) => (
                     <PredictBall
                       key={`${num}-${refreshKey}-${idx}`}
