@@ -39,7 +39,7 @@ export const appRouter = router({
 
     // 號碼頻率統計
     frequency: publicProcedure
-      .input(z.object({ window: z.number().min(5).max(200).default(20) }).optional())
+      .input(z.object({ window: z.number().min(1).max(200).default(20) }).optional())
       .query(async ({ input }) => {
         return await getFrequencyStats(input?.window ?? 20);
       }),
@@ -57,7 +57,7 @@ export const appRouter = router({
         z.object({
           strategy: z.enum(["hot", "cold", "balanced", "weighted", "overdue"]).default("balanced"),
           pick: z.number().min(1).max(20).default(5),
-          window: z.number().min(5).max(200).default(20),
+          window: z.number().min(1).max(200).default(20),
         })
       )
       .query(async ({ input }) => {

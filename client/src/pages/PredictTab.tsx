@@ -4,7 +4,7 @@ import { usePrediction } from "@/hooks/useBingo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, Sparkles, Target, Snowflake, Scale, Shuffle, Clock } from "lucide-react";
+import { Loader2, Sparkles, Target, Snowflake, Scale, Shuffle, Clock, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { StrategyType } from "@shared/types";
 import { STRATEGY_LABELS, STRATEGY_DESCRIPTIONS } from "@shared/types";
@@ -24,6 +24,8 @@ const strategyColors: Record<StrategyType, string> = {
   weighted: "border-neon-purple/40 hover:border-neon-purple/70 data-[active=true]:border-neon-purple data-[active=true]:bg-neon-purple/10 data-[active=true]:text-neon-purple",
   overdue: "border-neon-yellow/40 hover:border-neon-yellow/70 data-[active=true]:border-neon-yellow data-[active=true]:bg-neon-yellow/10 data-[active=true]:text-neon-yellow",
 };
+
+const WINDOW_OPTIONS = [1, 2, 3, 5, 10, 15, 20] as const;
 
 export default function PredictTab() {
   const [strategy, setStrategy] = useState<StrategyType>("balanced");
@@ -48,6 +50,43 @@ export default function PredictTab() {
 
   return (
     <div className="space-y-4">
+      {/* Window Period Selection */}
+      <Card className="neon-border bg-card">
+        <CardContent className="pt-5 pb-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-neon-blue" />
+              <span className="text-sm font-medium text-foreground">分析區間</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <span>分析最近</span>
+              <span className="font-mono-num font-bold text-neon-blue">{window}</span>
+              <span>期</span>
+            </div>
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            {WINDOW_OPTIONS.map(w => (
+              <button
+                key={w}
+                onClick={() => setWindow(w)}
+                className={cn(
+                  "relative flex-1 min-w-[3rem] rounded-lg border px-2 py-2 text-center text-sm font-mono-num font-medium transition-all",
+                  window === w
+                    ? "border-neon-blue bg-neon-blue/15 text-neon-blue shadow-[0_0_8px_rgba(0,200,255,0.15)]"
+                    : "border-border/50 text-muted-foreground hover:border-neon-blue/40 hover:text-foreground hover:bg-secondary/50"
+                )}
+              >
+                {w}
+                <span className="text-[10px] ml-0.5 opacity-70">期</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-2.5 text-[11px] text-muted-foreground/60">
+            選擇較少期數可觀察近期趨勢，較多期數可分析長期分布
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Strategy Selection */}
       <Card className="neon-border bg-card">
         <CardHeader className="pb-3">
@@ -80,7 +119,7 @@ export default function PredictTab() {
         </CardContent>
       </Card>
 
-      {/* Parameters */}
+      {/* Pick Count & Number Selection */}
       <Card className="neon-border bg-card">
         <CardContent className="pt-5 space-y-4">
           <div className="space-y-2">
@@ -94,20 +133,6 @@ export default function PredictTab() {
               min={1}
               max={20}
               step={1}
-              className="w-full"
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">分析期數</span>
-              <span className="font-mono-num text-neon-blue font-bold">{window}</span>
-            </div>
-            <Slider
-              value={[window]}
-              onValueChange={([v]) => setWindow(v)}
-              min={5}
-              max={200}
-              step={5}
               className="w-full"
             />
           </div>
