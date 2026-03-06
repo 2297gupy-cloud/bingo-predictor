@@ -159,7 +159,7 @@ export default function PredictTab() {
 
       {/* Results */}
       <Card className="neon-border bg-card">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-display">預測結果</CardTitle>
             <Button
@@ -184,13 +184,13 @@ export default function PredictTab() {
               <Loader2 className="h-8 w-8 animate-spin text-neon-blue" />
             </div>
           ) : data ? (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {/* 策略說明 */}
-              <p className="text-sm text-muted-foreground text-center">{data.description}</p>
+              <p className="text-xs text-muted-foreground text-center">{data.description}</p>
 
               {/* 預測號碼球體 — 紅色明亮漸層，整體置中縮排 */}
               <div className="flex justify-center">
-                <div className="inline-flex flex-wrap justify-center gap-3 px-4 py-4 rounded-xl bg-secondary/30 border border-border/20">
+                <div className="inline-flex flex-wrap justify-center gap-2.5 px-3 py-3 rounded-xl bg-secondary/30 border border-border/20">
                   {data.numbers.map((num, idx) => (
                     <PredictBall
                       key={`${num}-${refreshKey}-${idx}`}
@@ -202,7 +202,7 @@ export default function PredictTab() {
               </div>
 
               {/* 底部資訊 */}
-              <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/60">
+              <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground/60">
                 <span>
                   策略：<span className="text-foreground/70">{STRATEGY_LABELS[data.strategy as StrategyType]}</span>
                 </span>
