@@ -34,24 +34,23 @@ export default function StatsTab() {
             </div>
             <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground">
               <span>分析最近</span>
-              <span className="font-mono-num font-bold text-neon-orange">{window}</span>
+              <span className="font-mono-num font-bold text-neon-orange text-base sm:text-lg">{window}</span>
               <span>期</span>
             </div>
           </div>
-          <div className="flex gap-1 sm:gap-1.5 flex-wrap">
+          <div className="flex gap-0">
             {WINDOW_OPTIONS.map(opt => (
               <button
                 key={opt}
                 onClick={() => setWindow(opt)}
                 className={cn(
-                  "relative flex-1 min-w-[2.5rem] sm:min-w-[3rem] rounded-lg border px-1.5 sm:px-2 py-1.5 sm:py-2 text-center text-xs sm:text-sm font-mono-num font-medium transition-all",
+                  "flex-1 py-2 sm:py-2.5 text-center text-xs sm:text-sm font-mono-num font-medium transition-all border-b-2",
                   window === opt
-                    ? "border-neon-orange/60 bg-neon-orange/15 text-neon-orange shadow-[0_0_8px_rgba(255,160,50,0.2)]"
-                    : "border-border/50 text-muted-foreground hover:border-neon-orange/40 hover:text-foreground hover:bg-neon-orange/5"
+                    ? "border-neon-orange text-neon-orange bg-neon-orange/10"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"
                 )}
               >
-                {opt}
-                <span className="text-[10px] ml-0.5 opacity-70">期</span>
+                {opt} 期
               </button>
             ))}
           </div>
