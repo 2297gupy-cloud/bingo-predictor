@@ -27,7 +27,7 @@ function getTodayDateStr(): string {
 /** Golden ball component */
 function GoldenBall({ number, size = "md" }: { number: number; size?: "sm" | "md" | "lg" }) {
   const sizeClasses =
-    size === "sm" ? "w-6 h-6 text-[9px]" :
+    size === "sm" ? "w-5 h-5 text-[8px]" :
     size === "lg" ? "w-10 h-10 sm:w-11 sm:h-11 text-sm sm:text-base" :
     "w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm";
   return (
@@ -165,7 +165,7 @@ function SlotCard({
       onClick={onSelect}
       {...longPress.handlers}
       className={cn(
-        "relative cursor-pointer rounded-lg border p-2 sm:p-2.5 transition-all select-none",
+        "relative cursor-pointer rounded border p-1 sm:p-1.5 transition-all select-none",
         isSelected
           ? "border-amber-400/60 bg-amber-400/10 ring-1 ring-amber-400/30"
           : prediction
@@ -181,10 +181,10 @@ function SlotCard({
       )}
 
       {/* Header row */}
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-0.5">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3 text-muted-foreground" />
-          <span className="font-mono-num text-xs font-medium text-foreground">
+          <span className="font-mono-num text-[10px] font-medium text-foreground">
             {slot.source.padStart(2, "0")}時
           </span>
           {isCurrent && (
@@ -210,7 +210,7 @@ function SlotCard({
 
       {/* Golden balls or empty state */}
       {prediction ? (
-        <div className="flex items-center gap-1.5 justify-center">
+        <div className="flex items-center gap-1 justify-center">
           {prediction.goldenBalls.map((n, idx) => (
             <GoldenBall key={idx} number={n} size="sm" />
           ))}
@@ -225,7 +225,7 @@ function SlotCard({
       )}
 
       {/* Hint: long press to copy */}
-      <p className="text-[8px] text-muted-foreground/30 text-center mt-0.5">長按3秒複製</p>
+      <p className="text-[7px] text-muted-foreground/25 text-center mt-0">長按複製</p>
     </div>
   );
 }
@@ -315,7 +315,7 @@ export default function AiStrategyTab() {
               {predictions?.length || 0} 個時段已分析
             </span>
           </div>
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1">
             {slots.map(slot => {
               const pred = predictions?.find(p => p.sourceHour === slot.source);
               const isCurrent = currentSlot?.source === slot.source;
