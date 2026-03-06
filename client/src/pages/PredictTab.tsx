@@ -1,5 +1,4 @@
-import { useState, useMemo } from "react";
-import BingoBall from "@/components/BingoBall";
+import { useState } from "react";
 import { usePrediction } from "@/hooks/useBingo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,22 @@ const strategyColors: Record<StrategyType, string> = {
 const WINDOW_OPTIONS = [1, 2, 3, 5, 10, 15, 20] as const;
 const PICK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
+/** 預測結果號碼球 — 紅色明亮漸層球體（參考重複號碼樣式） */
+function PredictBall({ number, delay }: { number: number; delay: number }) {
+  return (
+    <div
+      className="flex items-center justify-center w-12 h-12 rounded-full font-mono-num text-base font-bold text-white animate-float"
+      style={{
+        background: "radial-gradient(circle at 35% 35%, #ff6b6b, #e53e3e, #c53030)",
+        boxShadow: "0 0 14px rgba(239, 68, 68, 0.55), 0 0 5px rgba(239, 68, 68, 0.3)",
+        animationDelay: `${delay}s`,
+      }}
+    >
+      {String(number).padStart(2, "0")}
+    </div>
+  );
+}
+
 export default function PredictTab() {
   const [strategy, setStrategy] = useState<StrategyType>("balanced");
   const [pick, setPick] = useState(5);
@@ -39,14 +54,6 @@ export default function PredictTab() {
     setRefreshKey(k => k + 1);
     refetch();
   };
-
-  const ballVariant = useMemo(() => {
-    switch (strategy) {
-      case "hot": return "hot" as const;
-      case "cold": return "cold" as const;
-      default: return "special" as const;
-    }
-  }, [strategy]);
 
   return (
     <div className="space-y-4">
@@ -178,19 +185,35 @@ export default function PredictTab() {
             </div>
           ) : data ? (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">{data.description}</p>
-              <div className="flex flex-wrap gap-2 justify-center py-2">
-                {data.numbers.map((num, idx) => (
-                  <BingoBall
-                    key={`${num}-${refreshKey}-${idx}`}
-                    number={num}
-                    size="lg"
-                    variant={ballVariant}
-                    showGlow
-                    className="animate-float"
-                    style={{ animationDelay: `${idx * 0.15}s` } as React.CSSProperties}
-                  />
-                ))}
+              {/* 策略說明 */}
+              <p className="text-sm text-muted-foreground text-center">{data.description}</p>
+
+              {/* 預測號碼球體 — 紅色明亮漸層，整體置中縮排 */}
+              <div className="flex justify-center">
+                <div className="inline-flex flex-wrap justify-center gap-3 px-4 py-4 rounded-xl bg-secondary/30 border border-border/20">
+                  {data.numbers.map((num, idx) => (
+                    <PredictBall
+                      key={`${num}-${refreshKey}-${idx}`}
+                      number={num}
+                      delay={idx * 0.12}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* 底部資訊 */}
+              <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/60">
+                <span>
+                  策略：<span className="text-foreground/70">{STRATEGY_LABELS[data.strategy as StrategyType]}</span>
+                </span>
+                <span className="text-border">|</span>
+                <span>
+                  分析：<span className="font-mono-num text-foreground/70">{window}</span> 期
+                </span>
+                <span className="text-border">|</span>
+                <span>
+                  選號：<span className="font-mono-num text-foreground/70">{pick}</span> 個
+                </span>
               </div>
             </div>
           ) : (
