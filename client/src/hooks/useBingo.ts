@@ -1,0 +1,56 @@
+import { trpc } from "@/lib/trpc";
+import type { StrategyType } from "@shared/types";
+
+export function useLatestDraw() {
+  return trpc.bingo.latest.useQuery(undefined, {
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+}
+
+export function useDbStats() {
+  return trpc.bingo.dbStats.useQuery(undefined, {
+    staleTime: 60_000,
+  });
+}
+
+export function useFrequency(window: number = 20) {
+  return trpc.bingo.frequency.useQuery(
+    { window },
+    { staleTime: 30_000 }
+  );
+}
+
+export function useConsecutive(window: number = 5) {
+  return trpc.bingo.consecutive.useQuery(
+    { window },
+    { staleTime: 30_000 }
+  );
+}
+
+export function usePrediction(strategy: StrategyType, pick: number = 5, window: number = 20) {
+  return trpc.bingo.predict.useQuery(
+    { strategy, pick, window },
+    { staleTime: 10_000 }
+  );
+}
+
+export function useSync() {
+  const utils = trpc.useUtils();
+  return trpc.bingo.sync.useMutation({
+    onSuccess: () => {
+      utils.bingo.latest.invalidate();
+      utils.bingo.dbStats.invalidate();
+      utils.bingo.frequency.invalidate();
+      utils.bingo.consecutive.invalidate();
+      utils.bingo.history.invalidate();
+    },
+  });
+}
+
+export function useHistory(page: number = 1, pageSize: number = 20, date?: string) {
+  return trpc.bingo.history.useQuery(
+    { page, pageSize, date },
+    { staleTime: 30_000 }
+  );
+}
