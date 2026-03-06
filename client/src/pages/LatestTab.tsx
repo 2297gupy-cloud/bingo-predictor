@@ -15,43 +15,52 @@ interface DrawData {
 }
 
 function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
-  const numbersStr = draw.numbers.map(n => String(n).padStart(2, "0")).join(",");
-
   return (
     <div
       className={cn(
-        "rounded border px-2.5 py-1.5 transition-all",
+        "rounded border px-2 sm:px-2.5 py-1.5 transition-all overflow-hidden",
         isFirst
           ? "border-neon-blue/40 bg-neon-blue/5"
           : "border-border/20 bg-transparent"
       )}
     >
-      {/* Line 1: term + time */}
-      <div className="font-mono-num text-xs font-bold text-foreground">
-        {draw.term}{" "}
-        <span className="text-muted-foreground font-normal">{draw.draw_time}</span>
+      {/* Line 1: term + time + big/small + odd/even */}
+      <div className="flex items-center justify-between">
+        <span className="font-mono-num text-xs font-bold text-foreground truncate">
+          {draw.term}
+          <span className="text-muted-foreground font-normal ml-1">{draw.draw_time}</span>
+        </span>
+        <div className="flex items-center gap-1 shrink-0 ml-1">
+          <span className="font-mono-num text-xs font-bold text-neon-purple">
+            {String(draw.special).padStart(2, "0")}
+          </span>
+          <span className={cn(
+            "font-mono-num text-xs font-bold",
+            draw.big_small === "大" ? "text-neon-orange" : draw.big_small === "小" ? "text-neon-blue" : "text-muted-foreground"
+          )}>
+            {draw.big_small || "－"}
+          </span>
+          <span className={cn(
+            "font-mono-num text-xs font-bold",
+            draw.odd_even === "單" ? "text-neon-purple" : draw.odd_even === "雙" ? "text-neon-green" : "text-muted-foreground"
+          )}>
+            {draw.odd_even || "－"}
+          </span>
+        </div>
       </div>
-      {/* Line 2: numbers  special  big/small  odd/even */}
-      <div className="flex items-baseline gap-0 mt-0.5 font-mono-num text-[11px] leading-snug">
-        <span className={cn(isFirst ? "text-foreground/90" : "text-muted-foreground/80")}>
-          {numbersStr}
-        </span>
-        <span className="text-muted-foreground/40 mx-1">&nbsp;&nbsp;</span>
-        <span className="font-bold text-neon-purple">{String(draw.special).padStart(2, "0")}</span>
-        <span className="text-muted-foreground/40 mx-0.5">&nbsp;</span>
-        <span className={cn(
-          "font-bold",
-          draw.big_small === "大" ? "text-neon-orange" : draw.big_small === "小" ? "text-neon-blue" : "text-muted-foreground"
-        )}>
-          {draw.big_small || "－"}
-        </span>
-        <span className="text-muted-foreground/40 mx-0.5">&nbsp;</span>
-        <span className={cn(
-          "font-bold",
-          draw.odd_even === "單" ? "text-neon-purple" : draw.odd_even === "雙" ? "text-neon-green" : "text-muted-foreground"
-        )}>
-          {draw.odd_even || "－"}
-        </span>
+      {/* Line 2: numbers — 自動換行 */}
+      <div className="flex flex-wrap gap-x-1 gap-y-0 mt-0.5">
+        {draw.numbers.map((n, i) => (
+          <span
+            key={i}
+            className={cn(
+              "font-mono-num text-[11px] leading-snug",
+              isFirst ? "text-foreground/90" : "text-muted-foreground/80"
+            )}
+          >
+            {String(n).padStart(2, "0")}{i < draw.numbers.length - 1 ? "," : ""}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -81,7 +90,7 @@ export default function LatestTab() {
 
   return (
     <div className="space-y-4">
-      <Card className="neon-border bg-card">
+      <Card className="neon-border bg-card overflow-hidden">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base font-display">
@@ -101,15 +110,15 @@ export default function LatestTab() {
       </Card>
 
       {dbStats && (
-        <Card className="neon-border bg-card">
+        <Card className="neon-border bg-card overflow-hidden">
           <CardContent className="py-4">
-            <div className="flex items-center justify-center gap-6 text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-center">
               <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-neon-blue" />
+                <Database className="h-4 w-4 text-neon-blue shrink-0" />
                 <span className="text-xs text-muted-foreground">資料庫總期數</span>
                 <span className="font-mono-num text-sm font-bold text-neon-blue">{dbStats.total_draws}</span>
               </div>
-              <div className="h-4 w-px bg-border" />
+              <div className="hidden sm:block h-4 w-px bg-border" />
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">最新</span>
                 <span className="font-mono-num text-sm font-bold">{dbStats.latest_date}</span>
