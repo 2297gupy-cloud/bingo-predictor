@@ -50,3 +50,4 @@
 - [x] Bug 修正：即時開獎結果手機模式數據跑出外框（號碼 flex-wrap 自動換行 + overflow-hidden + 第一行重新排版）
 - [x] UI 改善：分析區間手機版間距排版調整
 - [x] UI 改善：整體上下卡片間距壓緊（space-y-2 sm:space-y-3）
+- [x] UI 改善：選擇預測策略格子整體太大，縮小尺寸（p-2 sm:p-2.5、文字 text-xs sm:text-sm）

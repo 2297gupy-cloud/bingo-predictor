@@ -103,23 +103,23 @@ export default function PredictTab() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 sm:grid-cols-3">
             {(Object.keys(STRATEGY_LABELS) as StrategyType[]).map(s => (
               <button
                 key={s}
                 data-active={strategy === s}
                 onClick={() => setStrategy(s)}
                 className={cn(
-                  "flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-all",
+                  "flex flex-col items-start gap-0.5 rounded-lg border p-2 sm:p-2.5 text-left transition-all",
                   "text-muted-foreground",
                   strategyColors[s]
                 )}
               >
-                <div className="flex items-center gap-1.5 font-medium text-sm">
-                  {strategyIcons[s]}
+                <div className="flex items-center gap-1 sm:gap-1.5 font-medium text-xs sm:text-sm">
+                  <span className="[&>svg]:h-3 [&>svg]:w-3 sm:[&>svg]:h-3.5 sm:[&>svg]:w-3.5">{strategyIcons[s]}</span>
                   {STRATEGY_LABELS[s]}
                 </div>
-                <span className="text-[11px] opacity-70">{STRATEGY_DESCRIPTIONS[s]}</span>
+                <span className="text-[10px] sm:text-[11px] opacity-70">{STRATEGY_DESCRIPTIONS[s]}</span>
               </button>
             ))}
           </div>
