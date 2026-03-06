@@ -67,7 +67,7 @@ export default function PredictTab() {
             </div>
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <span>分析最近</span>
-              <span className="font-mono-num font-bold text-neon-blue">{window}</span>
+              <span className="font-mono-num font-bold text-neon-orange">{window}</span>
               <span>期</span>
             </div>
           </div>
@@ -79,8 +79,8 @@ export default function PredictTab() {
                 className={cn(
                   "relative flex-1 min-w-[3rem] rounded-lg border px-2 py-2 text-center text-sm font-mono-num font-medium transition-all",
                   window === w
-                    ? "border-neon-blue bg-neon-blue/15 text-neon-blue shadow-[0_0_8px_rgba(0,200,255,0.15)]"
-                    : "border-border/50 text-muted-foreground hover:border-neon-blue/40 hover:text-foreground hover:bg-secondary/50"
+                    ? "border-neon-orange/60 bg-neon-orange/15 text-neon-orange shadow-[0_0_8px_rgba(255,160,50,0.2)]"
+                    : "border-border/50 text-muted-foreground hover:border-neon-orange/40 hover:text-foreground hover:bg-neon-orange/5"
                 )}
               >
                 {w}
@@ -132,19 +132,19 @@ export default function PredictTab() {
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-foreground">選取號碼數</span>
             <span className="text-sm text-muted-foreground">
-              已選 <span className="font-mono-num font-bold text-neon-purple">{pick}</span> 個號碼
+              已選 <span className="font-mono-num font-bold text-amber-400">{pick}</span> 個號碼
             </span>
           </div>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="grid grid-cols-10 gap-2 w-full">
             {PICK_OPTIONS.map(n => (
               <button
                 key={n}
                 onClick={() => setPick(n)}
                 className={cn(
-                  "relative flex items-center justify-center rounded-full w-10 h-10 text-sm font-mono-num font-bold transition-all duration-200",
+                  "relative flex items-center justify-center rounded-full aspect-square text-sm font-mono-num font-bold transition-all duration-200",
                   pick === n
-                    ? "bg-neon-purple text-white shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-110"
-                    : "bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground hover:scale-105"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.3)] scale-110"
+                    : "bg-secondary/80 text-muted-foreground hover:bg-amber-500/10 hover:text-amber-300 hover:scale-105"
                 )}
               >
                 {n}
