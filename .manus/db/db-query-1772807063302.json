@@ -1,0 +1,60 @@
+{
+  "query": "SELECT drawTerm, drawDate, drawTime FROM bingo_draws ORDER BY drawTerm DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user ufchkNX5hQ8UsXE.root --database mhBYLdSLEBjgwNemRp68Rr --execute SELECT drawTerm, drawDate, drawTime FROM bingo_draws ORDER BY drawTerm DESC LIMIT 10;",
+  "rows": [
+    {
+      "drawTerm": "115013134",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:50"
+    },
+    {
+      "drawTerm": "115013133",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:45"
+    },
+    {
+      "drawTerm": "115013132",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:40"
+    },
+    {
+      "drawTerm": "115013131",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:35"
+    },
+    {
+      "drawTerm": "115013130",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:30"
+    },
+    {
+      "drawTerm": "115013129",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:25"
+    },
+    {
+      "drawTerm": "115013128",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:20"
+    },
+    {
+      "drawTerm": "115013127",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:15"
+    },
+    {
+      "drawTerm": "115013126",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:10"
+    },
+    {
+      "drawTerm": "115013125",
+      "drawDate": "2026-03-06",
+      "drawTime": "18:05"
+    }
+  ],
+  "messages": [],
+  "stdout": "drawTerm\tdrawDate\tdrawTime\n115013134\t2026-03-06\t18:50\n115013133\t2026-03-06\t18:45\n115013132\t2026-03-06\t18:40\n115013131\t2026-03-06\t18:35\n115013130\t2026-03-06\t18:30\n115013129\t2026-03-06\t18:25\n115013128\t2026-03-06\t18:20\n115013127\t2026-03-06\t18:15\n115013126\t2026-03-06\t18:10\n115013125\t2026-03-06\t18:05\n",
+  "stderr": "",
+  "execution_time_ms": 1610
+}
