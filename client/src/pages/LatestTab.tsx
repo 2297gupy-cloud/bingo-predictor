@@ -1,4 +1,3 @@
-import BingoBall from "@/components/BingoBall";
 import { useLatestDraws, useDbStats } from "@/hooks/useBingo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Trophy, Database } from "lucide-react";
@@ -19,14 +18,14 @@ function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
   return (
     <div
       className={cn(
-        "rounded-lg border p-3 transition-all",
+        "rounded-lg border px-3 py-2.5 transition-all",
         isFirst
           ? "border-neon-blue/40 bg-neon-blue/5"
-          : "border-border/30 bg-secondary/30"
+          : "border-border/20 bg-secondary/20"
       )}
     >
-      {/* Header: term + time + special + big/small + odd/even */}
-      <div className="flex items-center justify-between mb-2">
+      {/* Row 1: term + time */}
+      <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-3">
           <span className="font-mono-num text-xs font-bold text-foreground">
             {draw.term}
@@ -37,18 +36,18 @@ function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
         </div>
         <div className="flex items-center gap-2">
           {/* Super number */}
-          <div className="flex items-center gap-1">
-            <BingoBall number={draw.special} size="sm" variant="special" />
-          </div>
+          <span className="font-mono-num text-xs font-bold text-neon-purple">
+            {String(draw.special).padStart(2, "0")}
+          </span>
           {/* Big/Small */}
           <span
             className={cn(
-              "rounded px-1.5 py-0.5 text-[10px] font-bold",
+              "text-[10px] font-bold",
               draw.big_small === "大"
-                ? "bg-neon-orange/15 text-neon-orange"
+                ? "text-neon-orange"
                 : draw.big_small === "小"
-                  ? "bg-neon-blue/15 text-neon-blue"
-                  : "bg-secondary text-muted-foreground"
+                  ? "text-neon-blue"
+                  : "text-muted-foreground"
             )}
           >
             {draw.big_small || "－"}
@@ -56,12 +55,12 @@ function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
           {/* Odd/Even */}
           <span
             className={cn(
-              "rounded px-1.5 py-0.5 text-[10px] font-bold",
+              "text-[10px] font-bold",
               draw.odd_even === "單"
-                ? "bg-neon-purple/15 text-neon-purple"
+                ? "text-neon-purple"
                 : draw.odd_even === "雙"
-                  ? "bg-neon-green/15 text-neon-green"
-                  : "bg-secondary text-muted-foreground"
+                  ? "text-neon-green"
+                  : "text-muted-foreground"
             )}
           >
             {draw.odd_even || "－"}
@@ -69,17 +68,15 @@ function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
         </div>
       </div>
 
-      {/* Numbers */}
-      <div className="flex flex-wrap gap-1">
-        {draw.numbers.map((num, idx) => (
-          <BingoBall
-            key={`${draw.term}-${idx}`}
-            number={num}
-            size="sm"
-            variant={isFirst ? "default" : "neutral"}
-          />
-        ))}
-      </div>
+      {/* Row 2: numbers as plain text */}
+      <p
+        className={cn(
+          "font-mono-num text-xs leading-relaxed tracking-wide",
+          isFirst ? "text-foreground" : "text-muted-foreground"
+        )}
+      >
+        {draw.numbers.map(n => String(n).padStart(2, "0")).join(" ")}
+      </p>
     </div>
   );
 }
@@ -121,7 +118,7 @@ export default function LatestTab() {
             </span>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-1.5">
           {data.draws.map((draw, idx) => (
             <DrawRow key={draw.term} draw={draw} isFirst={idx === 0} />
           ))}
