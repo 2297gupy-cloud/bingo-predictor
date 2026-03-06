@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Sparkles, Copy, ClipboardCheck, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Copy, ClipboardCheck, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAiPredictions,
@@ -119,7 +119,7 @@ function useLongPress(callback: () => void, ms: number = 3000) {
   };
 }
 
-/** Slot card component — shows one time slot with its prediction status */
+/** Slot card component */
 function SlotCard({
   slot,
   prediction,
@@ -174,14 +174,11 @@ function SlotCard({
             : "border-border/20 bg-secondary/20 hover:border-border/40"
       )}
     >
-      {/* Long press progress bar */}
       {longPress.pressing && (
         <div className="absolute bottom-0 left-0 h-0.5 bg-amber-400 rounded-b-lg transition-all"
           style={{ width: `${longPress.progress * 100}%` }}
         />
       )}
-
-      {/* Header row */}
       <div className="flex items-center justify-between mb-0.5">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3 text-muted-foreground" />
@@ -208,8 +205,6 @@ function SlotCard({
           )}
         </div>
       </div>
-
-      {/* Golden balls or empty state */}
       {prediction ? (
         <div className="flex items-center gap-1 justify-center">
           {prediction.goldenBalls.map((n, idx) => (
@@ -224,8 +219,6 @@ function SlotCard({
           <span className="text-[10px] text-muted-foreground/40">尚未分析</span>
         </div>
       )}
-
-      {/* Hint: long press to copy */}
       <p className="text-[7px] text-muted-foreground/25 text-center mt-0">長按複製</p>
     </div>
   );
@@ -247,6 +240,31 @@ function shiftDate(dateStr: string, days: number): string {
   return d.toISOString().split("T")[0];
 }
 
+/**
+ * Parse input text to extract numbers 1~80.
+ * Supports formats like:
+ * - "10 22 33 55 88 99"
+ * - "整點 10 22 33 55 88 99"
+ * - "10,22,33"
+ * - Any text with numbers mixed in — extracts only valid 1~80 numbers
+ */
+function parseNumbersFromText(text: string): number[] {
+  // Extract all number sequences from the text
+  const matches = text.match(/\d+/g);
+  if (!matches) return [];
+  // Filter to valid bingo numbers (1~80), deduplicate
+  const seen = new Set<number>();
+  const result: number[] = [];
+  for (const m of matches) {
+    const n = parseInt(m, 10);
+    if (n >= 1 && n <= 80 && !seen.has(n)) {
+      seen.add(n);
+      result.push(n);
+    }
+  }
+  return result.slice(0, 6); // Max 6
+}
+
 export default function AiStrategyTab() {
   const todayStr = useMemo(() => getTodayDateStr(), []);
   const [dateStr, setDateStr] = useState(todayStr);
@@ -258,8 +276,9 @@ export default function AiStrategyTab() {
 
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [verifySlot, setVerifySlot] = useState<string | null>(null);
-  const [manualMode, setManualMode] = useState(false);
-  const [manualBalls, setManualBalls] = useState(["", "", ""]);
+  // Manual input state
+  const [manualText, setManualText] = useState("");
+  const [parsedBalls, setParsedBalls] = useState<number[]>([]);
 
   const currentSlot = slotsData?.currentSlot;
   const slots = slotsData?.slots || [];
@@ -268,9 +287,7 @@ export default function AiStrategyTab() {
   const currentPrediction = predictions?.find(p => p.sourceHour === effectiveSlot);
   const currentSlotInfo = slots.find(s => s.source === effectiveSlot);
 
-  // Verify slot: default to target of selected source slot
   const effectiveVerifySlot = verifySlot || currentSlotInfo?.target || null;
-  // Find prediction whose target matches the verify slot
   const verifyPrediction = effectiveVerifySlot
     ? predictions?.find(p => p.targetHour === effectiveVerifySlot)
     : currentPrediction;
@@ -278,27 +295,32 @@ export default function AiStrategyTab() {
   const handleAiAnalyze = async (sourceHour: string) => {
     try {
       const result = await aiAnalyze.mutateAsync({ date: dateStr, sourceHour });
-      toast.success(`AI 分析完成：${result.goldenBalls.map(n => String(n).padStart(2, "0")).join(", ")}`);
+      toast.success(`AI 分析完成：${result.goldenBalls.map((n: number) => String(n).padStart(2, "0")).join(", ")}`);
     } catch (err: any) {
       toast.error(`AI 分析失敗：${err.message}`);
     }
   };
 
+  // Handle manual text input change — auto parse numbers
+  const handleManualTextChange = (text: string) => {
+    setManualText(text);
+    setParsedBalls(parseNumbersFromText(text));
+  };
+
   const handleManualSubmit = async () => {
-    const balls = manualBalls.map(Number).filter(n => n >= 1 && n <= 80);
-    if (balls.length !== 3) {
-      toast.error("請輸入 3 個 1~80 的號碼");
+    if (parsedBalls.length < 1 || parsedBalls.length > 6) {
+      toast.error("請輸入 1~6 個 1~80 的號碼");
       return;
     }
     try {
       await aiManualInput.mutateAsync({
         date: dateStr,
         sourceHour: effectiveSlot,
-        goldenBalls: balls,
+        goldenBalls: parsedBalls,
       });
       toast.success("手動輸入成功");
-      setManualMode(false);
-      setManualBalls(["", "", ""]);
+      setManualText("");
+      setParsedBalls([]);
     } catch (err: any) {
       toast.error(`輸入失敗：${err.message}`);
     }
@@ -396,77 +418,36 @@ export default function AiStrategyTab() {
             <div className="flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5 text-amber-400" />
               <span className="text-xs font-medium text-foreground">
-                {effectiveSlot.padStart(2, "0")}時 三顆黃金球
+                {effectiveSlot.padStart(2, "0")}時 黃金球
                 {currentPrediction && (
                   <span className="ml-1 text-[10px] text-muted-foreground font-normal">
-                    ({currentPrediction.isManual ? "手動" : "AI"})
+                    ({currentPrediction.isManual ? "手動" : "AI"} · {currentPrediction.goldenBalls.length}顆)
                   </span>
                 )}
               </span>
             </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setManualMode(!manualMode)}
-                className="h-5 gap-0.5 border-amber-500/30 text-[10px] px-1.5 hover:bg-amber-500/10"
-              >
-                <Pencil className="h-2.5 w-2.5" />
-                手動
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleAiAnalyze(effectiveSlot)}
-                disabled={aiAnalyze.isPending}
-                className="h-5 gap-0.5 border-amber-500/30 text-[10px] px-1.5 hover:bg-amber-500/10"
-              >
-                {aiAnalyze.isPending ? (
-                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                ) : (
-                  <Brain className="h-2.5 w-2.5" />
-                )}
-                AI分析
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleAiAnalyze(effectiveSlot)}
+              disabled={aiAnalyze.isPending}
+              className="h-5 gap-0.5 border-amber-500/30 text-[10px] px-1.5 hover:bg-amber-500/10"
+            >
+              {aiAnalyze.isPending ? (
+                <Loader2 className="h-2.5 w-2.5 animate-spin" />
+              ) : (
+                <Brain className="h-2.5 w-2.5" />
+              )}
+              AI分析
+            </Button>
           </div>
-
-          {/* Manual input mode */}
-          {manualMode && (
-            <div className="flex items-center gap-1.5 mb-2 p-2 rounded-lg bg-secondary/30 border border-border/20">
-              {[0, 1, 2].map(i => (
-                <Input
-                  key={i}
-                  type="number"
-                  min={1}
-                  max={80}
-                  placeholder={`球${i + 1}`}
-                  value={manualBalls[i]}
-                  onChange={e => {
-                    const newBalls = [...manualBalls];
-                    newBalls[i] = e.target.value;
-                    setManualBalls(newBalls);
-                  }}
-                  className="h-7 w-16 text-center text-xs font-mono-num"
-                />
-              ))}
-              <Button
-                size="sm"
-                onClick={handleManualSubmit}
-                disabled={aiManualInput.isPending}
-                className="h-7 text-[10px] px-2 bg-amber-500 hover:bg-amber-600 text-black"
-              >
-                確認
-              </Button>
-            </div>
-          )}
 
           {/* Golden balls display */}
           {currentPrediction ? (
             <div className="space-y-1.5">
               <div className="flex justify-center">
                 <div className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border border-amber-500/20">
-                  {currentPrediction.goldenBalls.map((num, idx) => (
+                  {currentPrediction.goldenBalls.map((num: number, idx: number) => (
                     <GoldenBall key={idx} number={num} size="lg" />
                   ))}
                 </div>
@@ -483,14 +464,68 @@ export default function AiStrategyTab() {
           ) : (
             <div className="flex flex-col items-center gap-2 py-3">
               <p className="text-[10px] text-muted-foreground">
-                尚未分析此時段，點擊「AI分析」或「手動」輸入
+                尚未分析此時段，點擊「AI分析」或在下方手動輸入
               </p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Verification Section — with time slot selector */}
+      {/* Manual Input — Independent Card */}
+      <Card className="neon-border bg-card">
+        <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Pencil className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-xs font-medium text-foreground">
+              手動輸入（{effectiveSlot.padStart(2, "0")}時）
+            </span>
+            <span className="text-[10px] text-muted-foreground ml-auto">1~6 顆球</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <Input
+              type="text"
+              placeholder="輸入號碼，例如：10 22 33 55 88 99"
+              value={manualText}
+              onChange={e => handleManualTextChange(e.target.value)}
+              className="h-7 text-xs font-mono-num flex-1"
+            />
+            <Button
+              size="sm"
+              onClick={handleManualSubmit}
+              disabled={aiManualInput.isPending || parsedBalls.length < 1}
+              className="h-7 text-[10px] px-2.5 bg-amber-500 hover:bg-amber-600 text-black shrink-0"
+            >
+              {aiManualInput.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                "驗證"
+              )}
+            </Button>
+          </div>
+
+          {/* Parsed preview */}
+          {parsedBalls.length > 0 && (
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <span className="text-[10px] text-muted-foreground shrink-0">解析：</span>
+              <div className="flex items-center gap-1 flex-wrap">
+                {parsedBalls.map((n, idx) => (
+                  <GoldenBall key={idx} number={n} size="sm" />
+                ))}
+              </div>
+              <span className="text-[10px] text-muted-foreground ml-auto shrink-0">
+                {parsedBalls.length} 顆
+              </span>
+            </div>
+          )}
+
+          <p className="text-[10px] text-muted-foreground/40 mt-1">
+            支援格式：直接數字、逗號分隔、或含文字（自動去除文字保留數字）
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Verification Section */}
       <Card className="neon-border bg-card">
         <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
           <div className="flex items-center justify-between mb-1.5">
@@ -534,27 +569,27 @@ export default function AiStrategyTab() {
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] text-muted-foreground">號碼：</span>
-                  {verifyPrediction.goldenBalls.map(n => (
+                  {verifyPrediction.goldenBalls.map((n: number) => (
                     <GoldenBall key={n} number={n} size="sm" />
                   ))}
                 </div>
                 <span className="text-[10px] text-muted-foreground">
                   命中 <span className="font-mono-num font-bold text-green-400">
-                    {verifyPrediction.verification.filter(v => v.isHit).length}
+                    {verifyPrediction.verification.filter((v: any) => v.isHit).length}
                   </span>/{verifyPrediction.verification.length} 期
                 </span>
               </div>
               <div className="space-y-0.5">
-                {verifyPrediction.verification.map(item => (
+                {verifyPrediction.verification.map((item: any) => (
                   <VerifyRow key={item.term} item={item} />
                 ))}
               </div>
               <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px]">
                 <span className="text-green-400">
-                  命中率：{Math.round((verifyPrediction.verification.filter(v => v.isHit).length / verifyPrediction.verification.length) * 100)}%
+                  命中率：{Math.round((verifyPrediction.verification.filter((v: any) => v.isHit).length / verifyPrediction.verification.length) * 100)}%
                 </span>
                 <span className="text-muted-foreground">
-                  總命中球數：{verifyPrediction.verification.reduce((sum, v) => sum + v.hits.length, 0)}
+                  總命中球數：{verifyPrediction.verification.reduce((sum: number, v: any) => sum + v.hits.length, 0)}
                 </span>
               </div>
             </>

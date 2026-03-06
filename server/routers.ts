@@ -126,12 +126,12 @@ export const appRouter = router({
         return result;
       }),
 
-    // AI 一星策略：手動輸入三顆球
+    // AI 一星策略：手動輸入 1~6 顆球
     aiManualInput: publicProcedure
       .input(z.object({
         date: z.string(),
         sourceHour: z.string(),
-        goldenBalls: z.array(z.number().min(1).max(80)).length(3),
+        goldenBalls: z.array(z.number().min(1).max(80)).min(1).max(6),
       }))
       .mutation(async ({ input }) => {
         const slot = HOUR_SLOTS.find(s => s.source === input.sourceHour);
