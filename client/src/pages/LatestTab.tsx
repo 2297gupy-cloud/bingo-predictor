@@ -18,64 +18,34 @@ function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
   return (
     <div
       className={cn(
-        "rounded-lg border px-3 py-2.5 transition-all",
+        "rounded border px-2.5 py-1.5 transition-all",
         isFirst
           ? "border-neon-blue/40 bg-neon-blue/5"
-          : "border-border/20 bg-secondary/20"
+          : "border-border/20 bg-transparent"
       )}
     >
-      {/* Row 1: term + time */}
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-3">
-          <span className="font-mono-num text-xs font-bold text-foreground">
-            {draw.term}
-          </span>
-          <span className="font-mono-num text-xs text-muted-foreground">
-            {draw.draw_time}
-          </span>
-        </div>
+      {/* Line 1: term + time + special + big/small + odd/even */}
+      <div className="flex items-center justify-between font-mono-num text-xs">
         <div className="flex items-center gap-2">
-          {/* Super number */}
-          <span className="font-mono-num text-xs font-bold text-neon-purple">
-            {String(draw.special).padStart(2, "0")}
-          </span>
-          {/* Big/Small */}
-          <span
-            className={cn(
-              "text-[10px] font-bold",
-              draw.big_small === "大"
-                ? "text-neon-orange"
-                : draw.big_small === "小"
-                  ? "text-neon-blue"
-                  : "text-muted-foreground"
-            )}
-          >
+          <span className="font-bold text-foreground">{draw.term}</span>
+          <span className="text-muted-foreground">{draw.draw_time}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold text-neon-purple">{String(draw.special).padStart(2, "0")}</span>
+          <span className={cn("font-bold", draw.big_small === "大" ? "text-neon-orange" : draw.big_small === "小" ? "text-neon-blue" : "text-muted-foreground")}>
             {draw.big_small || "－"}
           </span>
-          {/* Odd/Even */}
-          <span
-            className={cn(
-              "text-[10px] font-bold",
-              draw.odd_even === "單"
-                ? "text-neon-purple"
-                : draw.odd_even === "雙"
-                  ? "text-neon-green"
-                  : "text-muted-foreground"
-            )}
-          >
+          <span className={cn("font-bold", draw.odd_even === "單" ? "text-neon-purple" : draw.odd_even === "雙" ? "text-neon-green" : "text-muted-foreground")}>
             {draw.odd_even || "－"}
           </span>
         </div>
       </div>
-
-      {/* Row 2: numbers as plain text */}
-      <p
-        className={cn(
-          "font-mono-num text-xs leading-relaxed tracking-wide",
-          isFirst ? "text-foreground" : "text-muted-foreground"
-        )}
-      >
-        {draw.numbers.map(n => String(n).padStart(2, "0")).join(" ")}
+      {/* Line 2: numbers with comma separation */}
+      <p className={cn(
+        "font-mono-num text-[11px] leading-snug mt-0.5",
+        isFirst ? "text-foreground/90" : "text-muted-foreground/80"
+      )}>
+        {draw.numbers.map(n => String(n).padStart(2, "0")).join(",")}
       </p>
     </div>
   );
@@ -105,7 +75,6 @@ export default function LatestTab() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <Card className="neon-border bg-card">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -118,14 +87,13 @@ export default function LatestTab() {
             </span>
           </div>
         </CardHeader>
-        <CardContent className="space-y-1.5">
+        <CardContent className="space-y-1">
           {data.draws.map((draw, idx) => (
             <DrawRow key={draw.term} draw={draw} isFirst={idx === 0} />
           ))}
         </CardContent>
       </Card>
 
-      {/* DB Stats */}
       {dbStats && (
         <Card className="neon-border bg-card">
           <CardContent className="py-4">
