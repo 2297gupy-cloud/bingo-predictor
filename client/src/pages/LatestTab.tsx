@@ -15,6 +15,8 @@ interface DrawData {
 }
 
 function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
+  const numbersStr = draw.numbers.map(n => String(n).padStart(2, "0")).join(",");
+
   return (
     <div
       className={cn(
@@ -24,29 +26,33 @@ function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
           : "border-border/20 bg-transparent"
       )}
     >
-      {/* Line 1: term + time + special + big/small + odd/even */}
-      <div className="flex items-center justify-between font-mono-num text-xs">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-foreground">{draw.term}</span>
-          <span className="text-muted-foreground">{draw.draw_time}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="font-bold text-neon-purple">{String(draw.special).padStart(2, "0")}</span>
-          <span className={cn("font-bold", draw.big_small === "大" ? "text-neon-orange" : draw.big_small === "小" ? "text-neon-blue" : "text-muted-foreground")}>
-            {draw.big_small || "－"}
-          </span>
-          <span className={cn("font-bold", draw.odd_even === "單" ? "text-neon-purple" : draw.odd_even === "雙" ? "text-neon-green" : "text-muted-foreground")}>
-            {draw.odd_even || "－"}
-          </span>
-        </div>
+      {/* Line 1: term + time */}
+      <div className="font-mono-num text-xs font-bold text-foreground">
+        {draw.term}{" "}
+        <span className="text-muted-foreground font-normal">{draw.draw_time}</span>
       </div>
-      {/* Line 2: numbers with comma separation */}
-      <p className={cn(
-        "font-mono-num text-[11px] leading-snug mt-0.5",
-        isFirst ? "text-foreground/90" : "text-muted-foreground/80"
-      )}>
-        {draw.numbers.map(n => String(n).padStart(2, "0")).join(",")}
-      </p>
+      {/* Line 2: numbers  special  big/small  odd/even */}
+      <div className="flex items-baseline gap-0 mt-0.5 font-mono-num text-[11px] leading-snug">
+        <span className={cn(isFirst ? "text-foreground/90" : "text-muted-foreground/80")}>
+          {numbersStr}
+        </span>
+        <span className="text-muted-foreground/40 mx-1">&nbsp;&nbsp;</span>
+        <span className="font-bold text-neon-purple">{String(draw.special).padStart(2, "0")}</span>
+        <span className="text-muted-foreground/40 mx-0.5">&nbsp;</span>
+        <span className={cn(
+          "font-bold",
+          draw.big_small === "大" ? "text-neon-orange" : draw.big_small === "小" ? "text-neon-blue" : "text-muted-foreground"
+        )}>
+          {draw.big_small || "－"}
+        </span>
+        <span className="text-muted-foreground/40 mx-0.5">&nbsp;</span>
+        <span className={cn(
+          "font-bold",
+          draw.odd_even === "單" ? "text-neon-purple" : draw.odd_even === "雙" ? "text-neon-green" : "text-muted-foreground"
+        )}>
+          {draw.odd_even || "－"}
+        </span>
+      </div>
     </div>
   );
 }
