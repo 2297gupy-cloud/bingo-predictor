@@ -164,13 +164,17 @@ export default function StatsTab() {
               <Loader2 className="h-6 w-6 animate-spin text-neon-blue" />
             </div>
           ) : repeatedTriples && repeatedTriples.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {repeatedTriples.map((num: number) => (
                 <div
                   key={num}
-                  className="flex items-center justify-center rounded-lg border border-neon-purple/30 bg-neon-purple/10 px-3 py-2 min-w-[48px]"
+                  className="flex items-center justify-center w-11 h-11 rounded-full font-mono-num text-base font-bold text-white"
+                  style={{
+                    background: 'radial-gradient(circle at 35% 35%, #ff6b6b, #e53e3e, #c53030)',
+                    boxShadow: '0 0 12px rgba(239, 68, 68, 0.6), 0 0 4px rgba(239, 68, 68, 0.3)',
+                  }}
                 >
-                  <span className="font-mono-num text-lg font-bold text-neon-purple">{String(num).padStart(2, '0')}</span>
+                  {String(num).padStart(2, '0')}
                 </div>
               ))}
             </div>
