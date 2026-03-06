@@ -56,28 +56,28 @@ export default function PredictTab() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-3">
       {/* Window Period Selection */}
       <Card className="neon-border bg-card">
-        <CardContent className="pt-5 pb-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-neon-blue" />
-              <span className="text-sm font-medium text-foreground">分析區間</span>
+        <CardContent className="pt-4 sm:pt-5 pb-3 sm:pb-4">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neon-blue" />
+              <span className="text-xs sm:text-sm font-medium text-foreground">分析區間</span>
             </div>
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground">
               <span>分析最近</span>
               <span className="font-mono-num font-bold text-neon-orange">{window}</span>
               <span>期</span>
             </div>
           </div>
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="flex gap-1 sm:gap-1.5 flex-wrap">
             {WINDOW_OPTIONS.map(w => (
               <button
                 key={w}
                 onClick={() => setWindow(w)}
                 className={cn(
-                  "relative flex-1 min-w-[3rem] rounded-lg border px-2 py-2 text-center text-sm font-mono-num font-medium transition-all",
+                  "relative flex-1 min-w-[2.5rem] sm:min-w-[3rem] rounded-lg border px-1.5 sm:px-2 py-1.5 sm:py-2 text-center text-xs sm:text-sm font-mono-num font-medium transition-all",
                   window === w
                     ? "border-neon-orange/60 bg-neon-orange/15 text-neon-orange shadow-[0_0_8px_rgba(255,160,50,0.2)]"
                     : "border-border/50 text-muted-foreground hover:border-neon-orange/40 hover:text-foreground hover:bg-neon-orange/5"
@@ -88,7 +88,7 @@ export default function PredictTab() {
               </button>
             ))}
           </div>
-          <p className="mt-2.5 text-[11px] text-muted-foreground/60">
+          <p className="mt-1.5 sm:mt-2.5 text-[10px] sm:text-[11px] text-muted-foreground/60">
             選擇較少期數可觀察近期趨勢，較多期數可分析長期分布
           </p>
         </CardContent>
@@ -96,9 +96,9 @@ export default function PredictTab() {
 
       {/* Strategy Selection */}
       <Card className="neon-border bg-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-display">
-            <Sparkles className="h-4 w-4 text-neon-purple" />
+        <CardHeader className="pb-2 sm:pb-3">
+          <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base font-display">
+            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neon-purple" />
             選擇預測策略
           </CardTitle>
         </CardHeader>
@@ -128,14 +128,14 @@ export default function PredictTab() {
 
       {/* Pick Count - Ball Selector */}
       <Card className="neon-border bg-card">
-        <CardContent className="pt-5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-foreground">選取號碼數</span>
-            <span className="text-sm text-muted-foreground">
+        <CardContent className="pt-4 sm:pt-5">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs sm:text-sm font-medium text-foreground">選取號碼數</span>
+            <span className="text-xs sm:text-sm text-muted-foreground">
               已選 <span className="font-mono-num font-bold text-amber-400">{pick}</span> 個號碼
             </span>
           </div>
-          <div className="grid grid-cols-10 gap-2 w-full">
+          <div className="grid grid-cols-10 gap-1.5 sm:gap-2 w-full">
             {PICK_OPTIONS.map(n => (
               <button
                 key={n}
@@ -151,7 +151,7 @@ export default function PredictTab() {
               </button>
             ))}
           </div>
-          <p className="mt-2.5 text-[11px] text-muted-foreground/60 text-center">
+          <p className="mt-1.5 sm:mt-2.5 text-[10px] sm:text-[11px] text-muted-foreground/60 text-center">
             賓果賓果每期開出 20 個號碼，建議選取 1~10 個號碼，選越多覆蓋率越高但彩金分配不同
           </p>
         </CardContent>
