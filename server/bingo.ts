@@ -198,6 +198,41 @@ export async function getConsecutiveStats(window: number = 5) {
     .sort((a, b) => b.streak - a.streak);
 }
 
+// ============ Repeated Triples (連續重複三球) ============
+
+export async function getRepeatedTriples(window: number = 5) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const draws = await db
+    .select()
+    .from(bingoDraws)
+    .orderBy(desc(bingoDraws.drawTerm))
+    .limit(window);
+
+  if (draws.length < 3) return [];
+
+  // For each number, find the max consecutive streak from the most recent draw
+  const results: { number: number; streak: number }[] = [];
+
+  for (let num = 1; num <= 80; num++) {
+    let streak = 0;
+    for (const draw of draws) {
+      const nums = draw.numbers.split(",").map(Number);
+      if (nums.includes(num)) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    if (streak >= 3) {
+      results.push({ number: num, streak });
+    }
+  }
+
+  return results.sort((a, b) => b.streak - a.streak);
+}
+
 // ============ Prediction Strategies ============
 
 export async function predict(

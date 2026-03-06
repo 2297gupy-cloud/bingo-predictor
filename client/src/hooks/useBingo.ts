@@ -28,6 +28,13 @@ export function useConsecutive(window: number = 5) {
   );
 }
 
+export function useRepeatedTriples(window: number = 5) {
+  return trpc.bingo.repeatedTriples.useQuery(
+    { window },
+    { staleTime: 30_000 }
+  );
+}
+
 export function usePrediction(strategy: StrategyType, pick: number = 5, window: number = 20) {
   return trpc.bingo.predict.useQuery(
     { strategy, pick, window },

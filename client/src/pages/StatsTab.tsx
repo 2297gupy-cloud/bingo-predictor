@@ -1,13 +1,16 @@
 import { useState, useMemo } from "react";
-import { useFrequency, useConsecutive } from "@/hooks/useBingo";
+import { useFrequency, useConsecutive, useRepeatedTriples } from "@/hooks/useBingo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
-import { Loader2, Repeat, Flame, Snowflake } from "lucide-react";
+import { Loader2, Repeat, Flame, Snowflake, Layers } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const WINDOW_OPTIONS = [1, 2, 3, 5, 10, 15, 20] as const;
 
 export default function StatsTab() {
   const [window, setWindow] = useState(20);
   const { data: frequency, isLoading: freqLoading } = useFrequency(window);
-  const { data: consecutive, isLoading: consLoading } = useConsecutive(5);
+  const { data: consecutive, isLoading: consLoading } = useConsecutive(window);
+  const { data: repeatedTriples, isLoading: triplesLoading } = useRepeatedTriples(window);
 
   const hotNumbers = useMemo(() => {
     if (!frequency) return [];
@@ -21,22 +24,30 @@ export default function StatsTab() {
 
   return (
     <div className="space-y-4">
-      {/* Window control */}
+      {/* Window control - button style */}
       <Card className="neon-border bg-card">
         <CardContent className="pt-5">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">分析期數</span>
-              <span className="font-mono-num text-neon-blue font-bold">{window}</span>
-            </div>
-            <Slider
-              value={[window]}
-              onValueChange={([v]) => setWindow(v)}
-              min={5}
-              max={200}
-              step={5}
-              className="w-full"
-            />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-muted-foreground">分析區間</span>
+            <span className="text-xs text-muted-foreground">
+              分析最近 <span className="font-mono-num font-bold text-neon-blue">{window}</span> 期
+            </span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {WINDOW_OPTIONS.map(opt => (
+              <button
+                key={opt}
+                onClick={() => setWindow(opt)}
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-sm font-mono-num font-bold transition-all",
+                  window === opt
+                    ? "bg-neon-blue text-white shadow-[0_0_12px_oklch(0.7_0.15_250)]"
+                    : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}
+              >
+                {opt}期
+              </button>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -100,12 +111,15 @@ export default function StatsTab() {
         </Card>
       </div>
 
-      {/* Consecutive numbers */}
+      {/* Consecutive (連莊) numbers */}
       <Card className="neon-border bg-card">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-display">
             <Repeat className="h-4 w-4 text-neon-green" />
             連莊號碼
+            <span className="text-xs text-muted-foreground font-normal ml-1">
+              連續 {window} 期內每期都出現
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -128,6 +142,42 @@ export default function StatsTab() {
           ) : (
             <p className="text-center text-sm text-muted-foreground py-4">
               目前無連莊號碼
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Repeated Triples (重複三球) */}
+      <Card className="neon-border bg-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-display">
+            <Layers className="h-4 w-4 text-neon-purple" />
+            重複三球
+            <span className="text-xs text-muted-foreground font-normal ml-1">
+              連續 3 期以上都出現的號碼
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {triplesLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-neon-blue" />
+            </div>
+          ) : repeatedTriples && repeatedTriples.length > 0 ? (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {repeatedTriples.map(item => (
+                <div
+                  key={item.number}
+                  className="flex items-center gap-2 rounded-lg border border-neon-purple/30 bg-neon-purple/5 p-2"
+                >
+                  <span className="font-mono-num text-lg font-bold text-neon-purple">{item.number}</span>
+                  <span className="text-[10px] text-muted-foreground">連{item.streak}期</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-sm text-muted-foreground py-4">
+              {window < 3 ? "需至少 3 期才能分析重複三球" : "目前無連續 3 期以上重複的號碼"}
             </p>
           )}
         </CardContent>

@@ -8,6 +8,7 @@ import {
   getDbStats,
   getFrequencyStats,
   getLatestDraw,
+  getRepeatedTriples,
   predict,
   syncRecentDays,
 } from "./bingo";
@@ -46,9 +47,16 @@ export const appRouter = router({
 
     // 連莊號碼統計
     consecutive: publicProcedure
-      .input(z.object({ window: z.number().min(2).max(50).default(5) }).optional())
+      .input(z.object({ window: z.number().min(1).max(200).default(5) }).optional())
       .query(async ({ input }) => {
         return await getConsecutiveStats(input?.window ?? 5);
+      }),
+
+    // 重複三球統計
+    repeatedTriples: publicProcedure
+      .input(z.object({ window: z.number().min(3).max(200).default(5) }).optional())
+      .query(async ({ input }) => {
+        return await getRepeatedTriples(input?.window ?? 5);
       }),
 
     // 號碼預測
