@@ -163,6 +163,28 @@ export const appRouter = router({
         return await getHourDraws(input.date, input.hour);
       }),
 
+    // AI 一星策略：取得格式化的整點數據（供複製用）
+    aiFormattedData: publicProcedure
+      .input(z.object({ date: z.string(), hour: z.string() }))
+      .query(async ({ input }) => {
+        const draws = await getHourDraws(input.date, input.hour);
+        const slot = HOUR_SLOTS.find(s => s.source === input.hour);
+        if (!slot || draws.length === 0) return { text: "" };
+
+        // Convert date to ROC year format
+        const [yyyy, mm, dd] = input.date.split("-");
+        const rocYear = parseInt(yyyy) - 1911;
+        const dateFormatted = `${rocYear}/${mm}/${dd}`;
+
+        const drawLines = draws.map(d =>
+          `${d.term} | ${d.time} | ${d.numbers.map(n => String(n).padStart(2, "0")).join(" ")}`
+        ).join("\n");
+
+        const text = `BINGO BINGO 專業數據演算報告 (${slot.label})\n報告日期：${dateFormatted}\n--------------------------------\n${drawLines}\n--------------------------------\n1. 演算之後 12 期出至最佳三顆黃金球數字，展開以下說明\n2. 強勢熱門號，「尾數共振」偵測\n3. 穩定的連莊號，捕捉剛起步的二連莊趨勢\n4. 捕捉斜連交會點，鎖定高機率落球區\n5. 縮小斜連跨度執行與精準死碼排除，強化防禦邏輯\n6. 核心演算邏輯穩定，不用回測驗證\n7. 核心演算結論 (5期策略) 預計期數/推薦組合重點/策略邏輯`;
+
+        return { text };
+      }),
+
     // 歷史紀錄（分頁）
     history: publicProcedure
       .input(

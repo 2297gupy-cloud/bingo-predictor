@@ -1,14 +1,15 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Sparkles } from "lucide-react";
+import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Sparkles, Copy, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAiPredictions,
   useAiHourSlots,
   useAiAnalyze,
   useAiManualInput,
+  useAiFormattedData,
 } from "@/hooks/useBingo";
 import { toast } from "sonner";
 
@@ -17,7 +18,6 @@ function getTodayDateStr(): string {
   const now = new Date();
   const utc8 = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   const hour = utc8.getUTCHours();
-  // Bingo draws start at 07:05, so before 07:00 we use yesterday's date
   if (hour < 7) {
     utc8.setUTCDate(utc8.getUTCDate() - 1);
   }
@@ -25,12 +25,15 @@ function getTodayDateStr(): string {
 }
 
 /** Golden ball component */
-function GoldenBall({ number, size = "md" }: { number: number; size?: "sm" | "md" }) {
-  const sizeClasses = size === "sm" ? "w-7 h-7 text-[10px]" : "w-9 h-9 sm:w-10 sm:h-10 text-xs sm:text-sm";
+function GoldenBall({ number, size = "md" }: { number: number; size?: "sm" | "md" | "lg" }) {
+  const sizeClasses =
+    size === "sm" ? "w-6 h-6 text-[9px]" :
+    size === "lg" ? "w-10 h-10 sm:w-11 sm:h-11 text-sm sm:text-base" :
+    "w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm";
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-full font-mono-num font-bold text-white",
+        "flex items-center justify-center rounded-full font-mono-num font-bold text-white shrink-0",
         sizeClasses
       )}
       style={{
@@ -72,6 +75,161 @@ function VerifyRow({ item }: { item: { term: string; index: number; time: string
   );
 }
 
+/** Long press hook */
+function useLongPress(callback: () => void, ms: number = 3000) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pressing, setPressing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const start = useCallback(() => {
+    setPressing(true);
+    setProgress(0);
+    const startTime = Date.now();
+    intervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      setProgress(Math.min(elapsed / ms, 1));
+    }, 50);
+    timerRef.current = setTimeout(() => {
+      callback();
+      setPressing(false);
+      setProgress(0);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    }, ms);
+  }, [callback, ms]);
+
+  const stop = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setPressing(false);
+    setProgress(0);
+  }, []);
+
+  return {
+    pressing,
+    progress,
+    handlers: {
+      onMouseDown: start,
+      onMouseUp: stop,
+      onMouseLeave: stop,
+      onTouchStart: start,
+      onTouchEnd: stop,
+    },
+  };
+}
+
+/** Slot card component — shows one time slot with its prediction status */
+function SlotCard({
+  slot,
+  prediction,
+  isCurrent,
+  isSelected,
+  onSelect,
+  dateStr,
+}: {
+  slot: { source: string; target: string; label: string; draws: number };
+  prediction?: {
+    goldenBalls: number[];
+    reasoning: string | null;
+    isManual: boolean;
+    verification: { isHit: boolean; hits: number[] }[];
+  };
+  isCurrent: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+  dateStr: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const { data: formattedData } = useAiFormattedData(dateStr, slot.source);
+
+  const handleCopy = useCallback(() => {
+    if (formattedData?.text) {
+      navigator.clipboard.writeText(formattedData.text).then(() => {
+        setCopied(true);
+        toast.success(`已複製 ${slot.source} 時段數據`);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    } else {
+      toast.error("此時段尚無數據可複製");
+    }
+  }, [formattedData, slot.source]);
+
+  const longPress = useLongPress(handleCopy, 3000);
+
+  const hitCount = prediction?.verification.filter(v => v.isHit).length ?? 0;
+  const totalCount = prediction?.verification.length ?? 0;
+  const hitRate = totalCount > 0 ? Math.round((hitCount / totalCount) * 100) : 0;
+
+  return (
+    <div
+      onClick={onSelect}
+      {...longPress.handlers}
+      className={cn(
+        "relative cursor-pointer rounded-lg border p-2 sm:p-2.5 transition-all select-none",
+        isSelected
+          ? "border-amber-400/60 bg-amber-400/10 ring-1 ring-amber-400/30"
+          : prediction
+            ? "border-green-500/20 bg-green-500/5 hover:border-green-500/40"
+            : "border-border/20 bg-secondary/20 hover:border-border/40"
+      )}
+    >
+      {/* Long press progress bar */}
+      {longPress.pressing && (
+        <div className="absolute bottom-0 left-0 h-0.5 bg-amber-400 rounded-b-lg transition-all"
+          style={{ width: `${longPress.progress * 100}%` }}
+        />
+      )}
+
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1">
+          <Clock className="h-3 w-3 text-muted-foreground" />
+          <span className="font-mono-num text-xs font-medium text-foreground">
+            {slot.source.padStart(2, "0")}時
+          </span>
+          {isCurrent && (
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {copied ? (
+            <ClipboardCheck className="h-3 w-3 text-green-400" />
+          ) : (
+            <Copy className="h-3 w-3 text-muted-foreground/40" />
+          )}
+          {prediction && (
+            <span className={cn(
+              "text-[10px] font-mono-num",
+              hitRate >= 50 ? "text-green-400" : hitRate > 0 ? "text-amber-400" : "text-muted-foreground"
+            )}>
+              {hitCount}/{totalCount}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Golden balls or empty state */}
+      {prediction ? (
+        <div className="flex items-center gap-1.5 justify-center">
+          {prediction.goldenBalls.map((n, idx) => (
+            <GoldenBall key={idx} number={n} size="sm" />
+          ))}
+          <span className="text-[9px] text-muted-foreground/50 ml-0.5">
+            {prediction.isManual ? "手動" : "AI"}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center py-0.5">
+          <span className="text-[10px] text-muted-foreground/40">尚未分析</span>
+        </div>
+      )}
+
+      {/* Hint: long press to copy */}
+      <p className="text-[8px] text-muted-foreground/30 text-center mt-0.5">長按3秒複製</p>
+    </div>
+  );
+}
+
 export default function AiStrategyTab() {
   const dateStr = useMemo(() => getTodayDateStr(), []);
   const { data: slotsData } = useAiHourSlots();
@@ -80,18 +238,23 @@ export default function AiStrategyTab() {
   const aiManualInput = useAiManualInput();
 
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [verifySlot, setVerifySlot] = useState<string | null>(null);
   const [manualMode, setManualMode] = useState(false);
   const [manualBalls, setManualBalls] = useState(["", "", ""]);
 
-  // Current time info
   const currentSlot = slotsData?.currentSlot;
   const slots = slotsData?.slots || [];
 
-  // Get prediction for selected slot
-  const selectedPrediction = predictions?.find(p => p.sourceHour === selectedSlot);
-
-  // Auto-select current slot
   const effectiveSlot = selectedSlot || currentSlot?.source || "15";
+  const currentPrediction = predictions?.find(p => p.sourceHour === effectiveSlot);
+  const currentSlotInfo = slots.find(s => s.source === effectiveSlot);
+
+  // Verify slot: default to target of selected source slot
+  const effectiveVerifySlot = verifySlot || currentSlotInfo?.target || null;
+  // Find prediction whose target matches the verify slot
+  const verifyPrediction = effectiveVerifySlot
+    ? predictions?.find(p => p.targetHour === effectiveVerifySlot)
+    : currentPrediction;
 
   const handleAiAnalyze = async (sourceHour: string) => {
     try {
@@ -122,69 +285,65 @@ export default function AiStrategyTab() {
     }
   };
 
-  // Find prediction for current effective slot
-  const currentPrediction = predictions?.find(p => p.sourceHour === effectiveSlot);
-  const currentSlotInfo = slots.find(s => s.source === effectiveSlot);
-
   return (
     <div className="space-y-1.5 sm:space-y-2">
       {/* Header */}
       <Card className="neon-border bg-card">
-        <CardContent className="pt-3 sm:pt-3.5 pb-2.5 sm:pb-3">
+        <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-1.5">
               <Brain className="h-3.5 w-3.5 text-amber-400" />
               <span className="text-xs font-medium text-foreground">AI 一星策略</span>
             </div>
             <span className="text-[10px] text-muted-foreground">
-              Gemini AI 分析 · 整點三顆黃金球
+              Forge AI · 整點三顆黃金球
             </span>
           </div>
-
-          {/* Hour slot selector */}
-          <div className="flex gap-0 overflow-x-auto scrollbar-none">
-            {slots.map(slot => {
-              const hasPrediction = predictions?.some(p => p.sourceHour === slot.source);
-              const isCurrent = currentSlot?.source === slot.source;
-              const isSelected = effectiveSlot === slot.source;
-              return (
-                <button
-                  key={slot.source}
-                  onClick={() => setSelectedSlot(slot.source)}
-                  className={cn(
-                    "relative shrink-0 py-1.5 px-2 text-center text-[10px] font-mono-num transition-all border-b-2",
-                    isSelected
-                      ? "border-amber-400 text-amber-400 bg-amber-400/10"
-                      : hasPrediction
-                        ? "border-transparent text-green-400/70 hover:text-green-400 hover:bg-green-400/5"
-                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"
-                  )}
-                >
-                  {slot.source}時
-                  {isCurrent && (
-                    <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  )}
-                  {hasPrediction && !isSelected && (
-                    <span className="absolute bottom-3 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-green-400" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-1 text-[10px] text-muted-foreground/60">
-            分析 {effectiveSlot.padStart(2, "0")}:00~{effectiveSlot.padStart(2, "0")}:55 數據 → 預測 {currentSlotInfo?.target.padStart(2, "0") || "??"}:00~{currentSlotInfo?.target.padStart(2, "0") || "??"}:55
+          <p className="text-[10px] text-muted-foreground/60">
+            選擇時段 → AI 分析 → 驗證命中 · 長按卡片 3 秒可複製整點數據
           </p>
         </CardContent>
       </Card>
 
-      {/* AI Analysis / Golden Balls */}
+      {/* Time Slot Grid */}
       <Card className="neon-border bg-card">
-        <CardContent className="pt-3 sm:pt-3.5 pb-2.5 sm:pb-3">
+        <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Clock className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-xs font-medium text-foreground">各時段總覽</span>
+            <span className="text-[10px] text-muted-foreground ml-auto">
+              {predictions?.length || 0} 個時段已分析
+            </span>
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+            {slots.map(slot => {
+              const pred = predictions?.find(p => p.sourceHour === slot.source);
+              const isCurrent = currentSlot?.source === slot.source;
+              const isSelected = effectiveSlot === slot.source;
+              return (
+                <SlotCard
+                  key={slot.source}
+                  slot={slot}
+                  prediction={pred}
+                  isCurrent={isCurrent}
+                  isSelected={isSelected}
+                  onSelect={() => setSelectedSlot(slot.source)}
+                  dateStr={dateStr}
+                />
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Selected Slot Detail — AI Analysis / Golden Balls */}
+      <Card className="neon-border bg-card">
+        <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5 text-amber-400" />
               <span className="text-xs font-medium text-foreground">
-                三顆黃金球
+                {effectiveSlot.padStart(2, "0")}時 三顆黃金球
                 {currentPrediction && (
                   <span className="ml-1 text-[10px] text-muted-foreground font-normal">
                     ({currentPrediction.isManual ? "手動" : "AI"})
@@ -253,9 +412,9 @@ export default function AiStrategyTab() {
           {currentPrediction ? (
             <div className="space-y-1.5">
               <div className="flex justify-center">
-                <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-secondary/30 border border-amber-500/20">
+                <div className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border border-amber-500/20">
                   {currentPrediction.goldenBalls.map((num, idx) => (
-                    <GoldenBall key={idx} number={num} />
+                    <GoldenBall key={idx} number={num} size="lg" />
                   ))}
                 </div>
               </div>
@@ -264,6 +423,9 @@ export default function AiStrategyTab() {
                   {currentPrediction.reasoning}
                 </p>
               )}
+              <p className="text-[10px] text-muted-foreground/50 text-center">
+                分析 {effectiveSlot.padStart(2, "0")}:00~{effectiveSlot.padStart(2, "0")}:55 → 預測 {currentSlotInfo?.target.padStart(2, "0") || "??"}:00~{currentSlotInfo?.target.padStart(2, "0") || "??"}:55
+              </p>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 py-3">
@@ -275,100 +437,86 @@ export default function AiStrategyTab() {
         </CardContent>
       </Card>
 
-      {/* Verification Results */}
-      {currentPrediction && currentPrediction.verification.length > 0 && (
-        <Card className="neon-border bg-card">
-          <CardContent className="pt-3 sm:pt-3.5 pb-2.5 sm:pb-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
-                <span className="text-xs font-medium text-foreground">
-                  驗證結果 ({currentSlotInfo?.target.padStart(2, "0")}:00~{currentSlotInfo?.target.padStart(2, "0")}:55)
-                </span>
-              </div>
-              <span className="text-[10px] text-muted-foreground">
-                命中 <span className="font-mono-num font-bold text-green-400">
-                  {currentPrediction.verification.filter(v => v.isHit).length}
-                </span>/{currentPrediction.verification.length} 期
-              </span>
+      {/* Verification Section — with time slot selector */}
+      <Card className="neon-border bg-card">
+        <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
+              <span className="text-xs font-medium text-foreground">驗證結果</span>
             </div>
-            <div className="flex items-center gap-1.5 mb-1.5 px-1">
-              <span className="text-[10px] text-muted-foreground">號碼：</span>
-              {currentPrediction.goldenBalls.map(n => (
-                <GoldenBall key={n} number={n} size="sm" />
-              ))}
-            </div>
-            <div className="space-y-0.5">
-              {currentPrediction.verification.map(item => (
-                <VerifyRow key={item.term} item={item} />
-              ))}
-            </div>
-            {/* Summary */}
-            <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px]">
-              <span className="text-green-400">
-                命中率：{Math.round((currentPrediction.verification.filter(v => v.isHit).length / currentPrediction.verification.length) * 100)}%
-              </span>
-              <span className="text-muted-foreground">
-                總命中球數：{currentPrediction.verification.reduce((sum, v) => sum + v.hits.length, 0)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
 
-      {/* All predictions summary */}
-      {predictions && predictions.length > 0 && (
-        <Card className="neon-border bg-card">
-          <CardContent className="pt-3 sm:pt-3.5 pb-2.5 sm:pb-3">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              <span className="text-xs font-medium text-foreground">今日 AI 預測總覽</span>
-            </div>
-            <div className="space-y-0.5">
-              {predictions.map(pred => {
-                const hitCount = pred.verification.filter(v => v.isHit).length;
-                const totalCount = pred.verification.length;
-                const hitRate = totalCount > 0 ? Math.round((hitCount / totalCount) * 100) : 0;
+          {/* Verify time slot selector */}
+          <div className="mb-2">
+            <p className="text-[10px] text-muted-foreground mb-1">選擇驗證時段：</p>
+            <div className="flex gap-0 overflow-x-auto scrollbar-none border-b border-border/20">
+              {slots.map(slot => {
+                const pred = predictions?.find(p => p.targetHour === slot.target);
+                const isVerifySelected = effectiveVerifySlot === slot.target;
                 return (
                   <button
-                    key={pred.id}
-                    onClick={() => setSelectedSlot(pred.sourceHour)}
+                    key={slot.target}
+                    onClick={() => setVerifySlot(slot.target)}
+                    disabled={!pred}
                     className={cn(
-                      "w-full flex items-center gap-2 px-2 py-1 rounded text-xs transition-all",
-                      effectiveSlot === pred.sourceHour
-                        ? "bg-amber-500/10 border border-amber-500/30"
-                        : "hover:bg-white/5 border border-transparent"
+                      "shrink-0 py-1 px-1.5 text-center text-[10px] font-mono-num transition-all border-b-2",
+                      isVerifySelected
+                        ? "border-green-400 text-green-400 bg-green-400/10"
+                        : pred
+                          ? "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"
+                          : "border-transparent text-muted-foreground/30 cursor-not-allowed"
                     )}
                   >
-                    <span className="font-mono-num text-muted-foreground w-8 shrink-0">
-                      {pred.sourceHour.padStart(2, "0")}時
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {pred.goldenBalls.map(n => (
-                        <span key={n} className="font-mono-num font-bold text-amber-400 text-[10px]">
-                          {String(n).padStart(2, "0")}
-                        </span>
-                      ))}
-                    </div>
-                    <span className="flex-1" />
-                    {totalCount > 0 && (
-                      <span className={cn(
-                        "font-mono-num text-[10px]",
-                        hitRate >= 50 ? "text-green-400" : hitRate > 0 ? "text-amber-400" : "text-muted-foreground"
-                      )}>
-                        {hitCount}/{totalCount} ({hitRate}%)
-                      </span>
-                    )}
-                    <span className="text-[10px] text-muted-foreground/50">
-                      {pred.isManual ? "手動" : "AI"}
-                    </span>
+                    {slot.target.padStart(2, "0")}時
                   </button>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+
+          {/* Verification results */}
+          {verifyPrediction && verifyPrediction.verification.length > 0 ? (
+            <>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground">號碼：</span>
+                  {verifyPrediction.goldenBalls.map(n => (
+                    <GoldenBall key={n} number={n} size="sm" />
+                  ))}
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  命中 <span className="font-mono-num font-bold text-green-400">
+                    {verifyPrediction.verification.filter(v => v.isHit).length}
+                  </span>/{verifyPrediction.verification.length} 期
+                </span>
+              </div>
+              <div className="space-y-0.5">
+                {verifyPrediction.verification.map(item => (
+                  <VerifyRow key={item.term} item={item} />
+                ))}
+              </div>
+              <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px]">
+                <span className="text-green-400">
+                  命中率：{Math.round((verifyPrediction.verification.filter(v => v.isHit).length / verifyPrediction.verification.length) * 100)}%
+                </span>
+                <span className="text-muted-foreground">
+                  總命中球數：{verifyPrediction.verification.reduce((sum, v) => sum + v.hits.length, 0)}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-1 py-3">
+              <XCircle className="h-4 w-4 text-muted-foreground/30" />
+              <p className="text-[10px] text-muted-foreground/50">
+                {effectiveVerifySlot
+                  ? `${effectiveVerifySlot.padStart(2, "0")} 時段尚無預測資料或開獎資料`
+                  : "請先選擇驗證時段"}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

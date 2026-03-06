@@ -91,6 +91,13 @@ export function useAiHourDraws(date: string, hour: string) {
   );
 }
 
+export function useAiFormattedData(date: string, hour: string) {
+  return trpc.bingo.aiFormattedData.useQuery(
+    { date, hour },
+    { staleTime: 30_000, enabled: !!date && !!hour }
+  );
+}
+
 export function useAiAnalyze() {
   const utils = trpc.useUtils();
   return trpc.bingo.aiAnalyze.useMutation({
