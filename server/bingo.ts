@@ -78,6 +78,65 @@ export function processRawData(rawData: BingoQueryResult[], dateStr: string): In
 
 // ============ Database Operations ============
 
+/**
+ * Batch upsert using raw SQL for performance.
+ * Uses INSERT ... ON DUPLICATE KEY UPDATE with batches of 50 records.
+ */
+async function batchUpsert(processed: InsertBingoDraw[]): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const BATCH_SIZE = 50;
+  let totalInserted = 0;
+
+  for (let i = 0; i < processed.length; i += BATCH_SIZE) {
+    const batch = processed.slice(i, i + BATCH_SIZE);
+
+    // Build VALUES clause
+    const valuePlaceholders: string[] = [];
+    const params: unknown[] = [];
+
+    for (const draw of batch) {
+      valuePlaceholders.push(`(?, ?, ?, ?, ?, ?, ?, ?)`);
+      params.push(
+        draw.drawTerm,
+        draw.drawDate,
+        draw.drawTime,
+        draw.numbers,
+        draw.drawOrder,
+        draw.special,
+        draw.bigSmall,
+        draw.oddEven
+      );
+    }
+
+    const query = `
+      INSERT INTO bingo_draws (drawTerm, drawDate, drawTime, numbers, drawOrder, special, bigSmall, oddEven)
+      VALUES ${valuePlaceholders.join(", ")}
+      ON DUPLICATE KEY UPDATE
+        numbers = VALUES(numbers),
+        drawOrder = VALUES(drawOrder),
+        drawTime = VALUES(drawTime),
+        special = VALUES(special),
+        bigSmall = VALUES(bigSmall),
+        oddEven = VALUES(oddEven)
+    `;
+
+    try {
+      await db.execute(sql.raw(query.replace(/\?/g, () => {
+        const val = params.shift();
+        if (typeof val === "number") return String(val);
+        return `'${String(val).replace(/'/g, "''")}'`;
+      })));
+      totalInserted += batch.length;
+    } catch (err) {
+      console.error(`[Bingo] Batch upsert error at offset ${i}:`, err);
+    }
+  }
+
+  return totalInserted;
+}
+
 export async function syncBingoData(dateStr: string): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
@@ -86,19 +145,7 @@ export async function syncBingoData(dateStr: string): Promise<number> {
   if (rawData.length === 0) return 0;
 
   const processed = processRawData(rawData, dateStr);
-  let inserted = 0;
-
-  for (const draw of processed) {
-    try {
-      await db.insert(bingoDraws).values(draw).onDuplicateKeyUpdate({
-        set: { numbers: draw.numbers, drawOrder: draw.drawOrder, drawTime: draw.drawTime },
-      });
-      inserted++;
-    } catch {
-      // skip errors
-    }
-  }
-  return inserted;
+  return await batchUpsert(processed);
 }
 
 export async function getLatestDraw() {
@@ -337,7 +384,31 @@ export async function syncRecentDays(days: number = 3): Promise<number> {
     const dateStr = d.toISOString().split("T")[0];
     const count = await syncBingoData(dateStr);
     total += count;
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 300));
   }
   return total;
+}
+
+// ============ Latest N draws ============
+
+export async function getLatestDraws(limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const draws = await db
+    .select()
+    .from(bingoDraws)
+    .orderBy(desc(bingoDraws.drawTerm))
+    .limit(limit);
+
+  return draws.map(draw => ({
+    term: draw.drawTerm,
+    draw_date: draw.drawDate,
+    draw_time: draw.drawTime,
+    numbers: draw.numbers.split(",").map(Number),
+    draw_order: draw.drawOrder.split(",").map(Number),
+    special: draw.special,
+    big_small: draw.bigSmall,
+    odd_even: draw.oddEven,
+  }));
 }

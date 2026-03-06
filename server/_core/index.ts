@@ -8,6 +8,7 @@ import { registerChatRoutes } from "./chat";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { syncRecentDays } from "../bingo";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -62,6 +63,28 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+
+    // Auto-sync: run initial sync after 5 seconds, then every 60 seconds
+    setTimeout(async () => {
+      try {
+        console.log('[AutoSync] Initial sync starting...');
+        const count = await syncRecentDays(1);
+        console.log(`[AutoSync] Initial sync complete: ${count} records`);
+      } catch (err) {
+        console.error('[AutoSync] Initial sync failed:', err);
+      }
+    }, 5000);
+
+    setInterval(async () => {
+      try {
+        const count = await syncRecentDays(1);
+        if (count > 0) {
+          console.log(`[AutoSync] Synced ${count} records`);
+        }
+      } catch (err) {
+        console.error('[AutoSync] Sync failed:', err);
+      }
+    }, 60000); // every 60 seconds
   });
 }
 

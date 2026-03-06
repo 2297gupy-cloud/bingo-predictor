@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Database, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   activeTab: string;
@@ -18,15 +19,41 @@ const tabs = [
 ];
 
 export default function Header({ activeTab, onTabChange }: HeaderProps) {
-  const { data: dbStats } = useDbStats();
+  const { data: dbStats, refetch: refetchStats } = useDbStats();
   const syncMutation = useSync();
+  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "done">("idle");
+
+  // Auto-refresh dbStats every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchStats();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [refetchStats]);
 
   const handleSync = async () => {
+    if (syncMutation.isPending) return;
+    setSyncStatus("syncing");
     try {
       const result = await syncMutation.mutateAsync({ days: 3 });
+      setSyncStatus("done");
       toast.success(`同步完成！已更新 ${result.synced} 筆資料`);
+      // Reset status after 3 seconds
+      setTimeout(() => setSyncStatus("idle"), 3000);
     } catch {
+      setSyncStatus("idle");
       toast.error("同步失敗，請稍後再試");
+    }
+  };
+
+  const getSyncButtonText = () => {
+    switch (syncStatus) {
+      case "syncing":
+        return "同步中...";
+      case "done":
+        return "已完成";
+      default:
+        return "同步";
     }
   };
 
@@ -60,10 +87,20 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
               size="sm"
               onClick={handleSync}
               disabled={syncMutation.isPending}
-              className="h-8 gap-1.5 border-neon-blue/30 text-xs hover:bg-neon-blue/10 hover:text-neon-blue"
+              className={cn(
+                "h-8 gap-1.5 border-neon-blue/30 text-xs transition-all",
+                syncStatus === "done"
+                  ? "border-green-500/50 text-green-400 hover:bg-green-500/10"
+                  : "hover:bg-neon-blue/10 hover:text-neon-blue"
+              )}
             >
-              <RefreshCw className={cn("h-3.5 w-3.5", syncMutation.isPending && "animate-spin")} />
-              <span className="hidden sm:inline">同步</span>
+              <RefreshCw
+                className={cn(
+                  "h-3.5 w-3.5",
+                  syncStatus === "syncing" && "animate-spin"
+                )}
+              />
+              <span className="hidden sm:inline">{getSyncButtonText()}</span>
             </Button>
           </div>
         </div>

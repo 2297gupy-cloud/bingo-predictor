@@ -119,6 +119,58 @@ describe("bingo.predict", () => {
   });
 });
 
+describe("bingo.sync", () => {
+  it("sync mutation returns synced count", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.bingo.sync({ days: 1 });
+
+    expect(result).toHaveProperty("synced");
+    expect(typeof result.synced).toBe("number");
+    expect(result.synced).toBeGreaterThanOrEqual(0);
+  }, 30_000);
+});
+
+describe("processRawData", () => {
+  it("correctly calculates draw time from index", async () => {
+    const { processRawData } = await import("./bingo");
+    const mockData = [
+      {
+        drawTerm: 115013001,
+        bigShowOrder: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+                       "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"],
+        openShowOrder: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+                        "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"],
+        bullEyeTop: "05",
+        highLowTop: "\u5927",
+        oddEvenTop: "\u55ae",
+      },
+      {
+        drawTerm: 115013002,
+        bigShowOrder: ["21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+                       "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"],
+        openShowOrder: ["21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+                        "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"],
+        bullEyeTop: "25",
+        highLowTop: "\u5c0f",
+        oddEvenTop: "\u96d9",
+      },
+    ];
+
+    const result = processRawData(mockData, "2026-03-06");
+    expect(result.length).toBe(2);
+    // First draw (index 0): 07:05
+    expect(result[0].drawTime).toBe("07:05");
+    // Second draw (index 1): 07:10
+    expect(result[1].drawTime).toBe("07:10");
+    // Check numbers are sorted
+    expect(result[0].numbers).toBe("1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20");
+    expect(result[0].special).toBe(5);
+    expect(result[0].bigSmall).toBe("\u5927");
+    expect(result[0].oddEven).toBe("\u55ae");
+  });
+});
+
 describe("bingo.history", () => {
   it("returns paginated history with correct shape", async () => {
     const ctx = createPublicContext();
