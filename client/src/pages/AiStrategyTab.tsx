@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Sparkles, Copy, ClipboardCheck } from "lucide-react";
+import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Sparkles, Copy, ClipboardCheck, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAiPredictions,
@@ -230,8 +230,26 @@ function SlotCard({
   );
 }
 
+/** Format YYYY-MM-DD to display string like "03/07 (五)" */
+function formatDateDisplay(dateStr: string): string {
+  const d = new Date(dateStr + "T12:00:00");
+  const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${mm}/${dd} (${weekdays[d.getDay()]})`;
+}
+
+/** Shift date by N days */
+function shiftDate(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T12:00:00");
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
 export default function AiStrategyTab() {
-  const dateStr = useMemo(() => getTodayDateStr(), []);
+  const todayStr = useMemo(() => getTodayDateStr(), []);
+  const [dateStr, setDateStr] = useState(todayStr);
+  const isToday = dateStr === todayStr;
   const { data: slotsData } = useAiHourSlots();
   const { data: predictions, isLoading: loadingPredictions } = useAiPredictions(dateStr);
   const aiAnalyze = useAiAnalyze();
@@ -295,9 +313,43 @@ export default function AiStrategyTab() {
               <Brain className="h-3.5 w-3.5 text-amber-400" />
               <span className="text-xs font-medium text-foreground">AI 一星策略</span>
             </div>
-            <span className="text-[10px] text-muted-foreground">
-              Forge AI · 整點三顆黃金球
-            </span>
+            {/* Date Selector */}
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => setDateStr(prev => shiftDate(prev, -1))}
+                className="p-0.5 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-secondary/40 border border-border/20 min-w-[80px] justify-center">
+                <CalendarDays className="h-3 w-3 text-amber-400" />
+                <span className="text-[10px] font-mono-num text-foreground">
+                  {formatDateDisplay(dateStr)}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  if (!isToday) setDateStr(prev => shiftDate(prev, 1));
+                }}
+                disabled={isToday}
+                className={cn(
+                  "p-0.5 rounded transition-colors",
+                  isToday
+                    ? "text-muted-foreground/20 cursor-not-allowed"
+                    : "hover:bg-white/10 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+              {!isToday && (
+                <button
+                  onClick={() => setDateStr(todayStr)}
+                  className="text-[9px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors"
+                >
+                  今日
+                </button>
+              )}
+            </div>
           </div>
           <p className="text-[10px] text-muted-foreground/60">
             選擇時段 → AI 分析 → 驗證命中 · 長按卡片 3 秒可複製整點數據
