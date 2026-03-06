@@ -30,3 +30,18 @@ export const bingoDraws = mysqlTable("bingo_draws", {
 
 export type BingoDraw = typeof bingoDraws.$inferSelect;
 export type InsertBingoDraw = typeof bingoDraws.$inferInsert;
+
+// AI 一星策略預測結果
+export const aiPredictions = mysqlTable("ai_predictions", {
+  id: int("id").autoincrement().primaryKey(),
+  predDate: varchar("predDate", { length: 10 }).notNull(), // e.g. 115/03/06
+  sourceHour: varchar("sourceHour", { length: 5 }).notNull(), // e.g. "15" (分析 15:00~15:55)
+  targetHour: varchar("targetHour", { length: 5 }).notNull(), // e.g. "16" (驗證 16:00~16:55)
+  goldenBalls: varchar("goldenBalls", { length: 20 }).notNull(), // e.g. "30,12,46"
+  aiReasoning: text("aiReasoning"), // AI 分析理由
+  isManual: int("isManual").default(0).notNull(), // 0=AI, 1=手動輸入
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AiPrediction = typeof aiPredictions.$inferSelect;
+export type InsertAiPrediction = typeof aiPredictions.$inferInsert;

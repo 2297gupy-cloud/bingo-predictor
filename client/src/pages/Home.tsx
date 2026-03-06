@@ -5,6 +5,7 @@ import LatestTab from "./LatestTab";
 import StatsTab from "./StatsTab";
 import HistoryTab from "./HistoryTab";
 import SimulateTab from "./SimulateTab";
+import AiStrategyTab from "./AiStrategyTab";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310419663030293983/mhBYLdSLEBjgwNemRp68Rr/hero-bg-AFxqPFz8T99g5zJRcQgvKa.webp";
 
@@ -15,6 +16,8 @@ export default function Home() {
     switch (activeTab) {
       case "predict":
         return <PredictTab />;
+      case "ai":
+        return <AiStrategyTab />;
       case "latest":
         return <LatestTab />;
       case "stats":

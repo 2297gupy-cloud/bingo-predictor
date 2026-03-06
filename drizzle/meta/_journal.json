@@ -15,6 +15,13 @@
       "when": 1772787333929,
       "tag": "0001_acoustic_wong",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772833581019,
+      "tag": "0002_bitter_katie_power",
+      "breakpoints": true
     }
   ]
 }

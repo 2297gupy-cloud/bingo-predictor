@@ -68,3 +68,43 @@ export function useHistory(page: number = 1, pageSize: number = 20, date?: strin
     { staleTime: 30_000 }
   );
 }
+
+// ============ AI 一星策略 Hooks ============
+
+export function useAiPredictions(date: string) {
+  return trpc.bingo.aiPredictions.useQuery(
+    { date },
+    { staleTime: 30_000, refetchInterval: 60_000 }
+  );
+}
+
+export function useAiHourSlots() {
+  return trpc.bingo.aiHourSlots.useQuery(undefined, {
+    staleTime: 60_000,
+  });
+}
+
+export function useAiHourDraws(date: string, hour: string) {
+  return trpc.bingo.aiHourDraws.useQuery(
+    { date, hour },
+    { staleTime: 30_000, enabled: !!date && !!hour }
+  );
+}
+
+export function useAiAnalyze() {
+  const utils = trpc.useUtils();
+  return trpc.bingo.aiAnalyze.useMutation({
+    onSuccess: () => {
+      utils.bingo.aiPredictions.invalidate();
+    },
+  });
+}
+
+export function useAiManualInput() {
+  const utils = trpc.useUtils();
+  return trpc.bingo.aiManualInput.useMutation({
+    onSuccess: () => {
+      utils.bingo.aiPredictions.invalidate();
+    },
+  });
+}

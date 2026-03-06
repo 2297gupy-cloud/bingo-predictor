@@ -12,6 +12,16 @@ import {
   predict,
   syncRecentDays,
 } from "./bingo";
+import {
+  HOUR_SLOTS,
+  getAiPredictions,
+  getAiPrediction,
+  runAiAnalysis,
+  verifyPrediction,
+  saveAiPrediction,
+  getHourDraws,
+  getCurrentHourSlot,
+} from "./aiStrategy";
 import { getDb } from "./db";
 import { bingoDraws } from "../drizzle/schema";
 import { desc, like } from "drizzle-orm";
@@ -78,6 +88,79 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const count = await syncRecentDays(input?.days ?? 3);
         return { synced: count };
+      }),
+
+    // AI 一星策略：取得所有時段預測
+    aiPredictions: publicProcedure
+      .input(z.object({ date: z.string() }))
+      .query(async ({ input }) => {
+        const predictions = await getAiPredictions(input.date);
+        // For each prediction, also get verification results
+        const results = await Promise.all(
+          predictions.map(async (pred) => {
+            const balls = pred.goldenBalls.split(",").map(Number);
+            const verification = await verifyPrediction(pred.predDate, pred.targetHour, balls);
+            return {
+              id: pred.id,
+              predDate: pred.predDate,
+              sourceHour: pred.sourceHour,
+              targetHour: pred.targetHour,
+              goldenBalls: balls,
+              reasoning: pred.aiReasoning,
+              isManual: pred.isManual === 1,
+              verification,
+            };
+          })
+        );
+        return results;
+      }),
+
+    // AI 一星策略：執行 AI 分析
+    aiAnalyze: publicProcedure
+      .input(z.object({
+        date: z.string(),
+        sourceHour: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await runAiAnalysis(input.date, input.sourceHour);
+        return result;
+      }),
+
+    // AI 一星策略：手動輸入三顆球
+    aiManualInput: publicProcedure
+      .input(z.object({
+        date: z.string(),
+        sourceHour: z.string(),
+        goldenBalls: z.array(z.number().min(1).max(80)).length(3),
+      }))
+      .mutation(async ({ input }) => {
+        const slot = HOUR_SLOTS.find(s => s.source === input.sourceHour);
+        if (!slot) throw new Error("Invalid source hour");
+        await saveAiPrediction(
+          input.date,
+          input.sourceHour,
+          slot.target,
+          input.goldenBalls,
+          "手動輸入",
+          true
+        );
+        return { success: true };
+      }),
+
+    // AI 一星策略：取得時段列表和目前時段
+    aiHourSlots: publicProcedure.query(() => {
+      const current = getCurrentHourSlot();
+      return {
+        slots: HOUR_SLOTS,
+        currentSlot: current,
+      };
+    }),
+
+    // AI 一星策略：取得指定時段的開獎資料
+    aiHourDraws: publicProcedure
+      .input(z.object({ date: z.string(), hour: z.string() }))
+      .query(async ({ input }) => {
+        return await getHourDraws(input.date, input.hour);
       }),
 
     // 歷史紀錄（分頁）

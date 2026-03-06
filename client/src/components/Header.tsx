@@ -12,6 +12,7 @@ interface HeaderProps {
 
 const tabs = [
   { id: "predict", label: "號碼預測", icon: "🎯" },
+  { id: "ai", label: "AI一星", icon: "🧠" },
   { id: "latest", label: "最新開獎", icon: "🎰" },
   { id: "stats", label: "統計分析", icon: "📊" },
   { id: "history", label: "歷史紀錄", icon: "📋" },
