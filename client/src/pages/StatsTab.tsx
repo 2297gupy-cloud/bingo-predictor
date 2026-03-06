@@ -152,9 +152,9 @@ export default function StatsTab() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-display">
             <Layers className="h-4 w-4 text-neon-purple" />
-            重複三球
+            重複號碼
             <span className="text-xs text-muted-foreground font-normal ml-1">
-              {window} 期內出現 3 次以上的號碼
+              {window} 期內每期都出現的號碼
             </span>
           </CardTitle>
         </CardHeader>
@@ -164,20 +164,19 @@ export default function StatsTab() {
               <Loader2 className="h-6 w-6 animate-spin text-neon-blue" />
             </div>
           ) : repeatedTriples && repeatedTriples.length > 0 ? (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {repeatedTriples.map(item => (
+            <div className="flex flex-wrap gap-2">
+              {repeatedTriples.map((num: number) => (
                 <div
-                  key={item.number}
-                  className="flex items-center gap-2 rounded-lg border border-neon-purple/30 bg-neon-purple/5 p-2"
+                  key={num}
+                  className="flex items-center justify-center rounded-lg border border-neon-purple/30 bg-neon-purple/10 px-3 py-2 min-w-[48px]"
                 >
-                  <span className="font-mono-num text-lg font-bold text-neon-purple">{item.number}</span>
-                  <span className="text-[10px] text-muted-foreground">{item.count}次</span>
+                  <span className="font-mono-num text-lg font-bold text-neon-purple">{String(num).padStart(2, '0')}</span>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-center text-sm text-muted-foreground py-4">
-              {window < 3 ? "需至少 3 期才能分析重複三球" : "目前無出現 3 次以上的號碼"}
+              {window} 期內無每期都出現的重複號碼
             </p>
           )}
         </CardContent>

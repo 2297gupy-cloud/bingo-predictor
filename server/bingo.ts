@@ -210,24 +210,20 @@ export async function getRepeatedTriples(window: number = 10) {
     .orderBy(desc(bingoDraws.drawTerm))
     .limit(window);
 
-  if (draws.length < 3) return [];
+  if (draws.length < 2) return [];
 
-  // Count how many times each number appears in the analysis window
-  const freq: Record<number, number> = {};
-  for (let i = 1; i <= 80; i++) freq[i] = 0;
+  // Parse each draw's numbers into a Set for fast lookup
+  const drawSets = draws.map(d => new Set(d.numbers.split(",").map(Number)));
 
-  for (const draw of draws) {
-    const nums = draw.numbers.split(",").map(Number);
-    for (const n of nums) {
-      freq[n] = (freq[n] || 0) + 1;
+  // Find numbers that appear in EVERY draw within the window (intersection)
+  const results: number[] = [];
+  for (let num = 1; num <= 80; num++) {
+    if (drawSets.every(s => s.has(num))) {
+      results.push(num);
     }
   }
 
-  // Return numbers that appear 3 or more times within the window
-  return Object.entries(freq)
-    .filter(([_, count]) => count >= 3)
-    .map(([num, count]) => ({ number: Number(num), count }))
-    .sort((a, b) => b.count - a.count);
+  return results.sort((a, b) => a - b);
 }
 
 // ============ Prediction Strategies ============

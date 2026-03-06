@@ -54,7 +54,7 @@ export const appRouter = router({
 
     // 重複三球統計
     repeatedTriples: publicProcedure
-      .input(z.object({ window: z.number().min(3).max(200).default(5) }).optional())
+      .input(z.object({ window: z.number().min(2).max(200).default(5) }).optional())
       .query(async ({ input }) => {
         return await getRepeatedTriples(input?.window ?? 5);
       }),
