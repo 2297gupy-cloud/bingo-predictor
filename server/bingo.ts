@@ -41,12 +41,14 @@ export async function fetchBingoDataFromAPI(dateStr: string): Promise<BingoQuery
 }
 
 export function processRawData(rawData: BingoQueryResult[], dateStr: string): InsertBingoDraw[] {
-  return rawData.map(res => {
+  // Sort by drawTerm ascending so index = daily sequence (0-indexed)
+  const sorted = [...rawData].sort((a, b) => a.drawTerm - b.drawTerm);
+
+  return sorted.map((res, index) => {
     const term = String(res.drawTerm);
-    const seq = parseInt(term.slice(-3), 10);
-    // 第一期 (seq=1) 開獎時間為 07:45，每 5 分鐘一期
-    const baseMinutes = 7 * 60 + 45; // 07:45
-    const totalMinutes = baseMinutes + (seq - 1) * 5;
+    // 每日第一期開獎時間為 07:05，每 5 分鐘一期，共 203 期至 23:55
+    const baseMinutes = 7 * 60 + 5; // 07:05
+    const totalMinutes = baseMinutes + index * 5;
     const hours = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
     const mins = (totalMinutes % 60).toString().padStart(2, "0");
     const drawTime = `${hours}:${mins}`;
@@ -89,7 +91,7 @@ export async function syncBingoData(dateStr: string): Promise<number> {
   for (const draw of processed) {
     try {
       await db.insert(bingoDraws).values(draw).onDuplicateKeyUpdate({
-        set: { numbers: draw.numbers, drawOrder: draw.drawOrder },
+        set: { numbers: draw.numbers, drawOrder: draw.drawOrder, drawTime: draw.drawTime },
       });
       inserted++;
     } catch {
