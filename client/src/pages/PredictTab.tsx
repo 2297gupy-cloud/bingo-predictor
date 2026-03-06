@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { usePrediction } from "@/hooks/useBingo";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles, Target, Snowflake, Scale, Shuffle, Clock, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,11 +8,11 @@ import type { StrategyType } from "@shared/types";
 import { STRATEGY_LABELS, STRATEGY_DESCRIPTIONS } from "@shared/types";
 
 const strategyIcons: Record<StrategyType, React.ReactNode> = {
-  hot: <Target className="h-4 w-4" />,
-  cold: <Snowflake className="h-4 w-4" />,
-  balanced: <Scale className="h-4 w-4" />,
-  weighted: <Shuffle className="h-4 w-4" />,
-  overdue: <Clock className="h-4 w-4" />,
+  hot: <Target className="h-3.5 w-3.5" />,
+  cold: <Snowflake className="h-3.5 w-3.5" />,
+  balanced: <Scale className="h-3.5 w-3.5" />,
+  weighted: <Shuffle className="h-3.5 w-3.5" />,
+  overdue: <Clock className="h-3.5 w-3.5" />,
 };
 
 const strategyColors: Record<StrategyType, string> = {
@@ -30,7 +30,7 @@ const PICK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 function PredictBall({ number, delay }: { number: number; delay: number }) {
   return (
     <div
-      className="flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full font-mono-num text-sm sm:text-base font-bold text-white animate-float"
+      className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full font-mono-num text-xs sm:text-sm font-bold text-white animate-float"
       style={{
         background: "radial-gradient(circle at 35% 35%, #ff6b6b, #e53e3e, #c53030)",
         boxShadow: "0 0 14px rgba(239, 68, 68, 0.55), 0 0 5px rgba(239, 68, 68, 0.3)",
@@ -56,18 +56,18 @@ export default function PredictTab() {
   };
 
   return (
-    <div className="space-y-2 sm:space-y-3">
+    <div className="space-y-1.5 sm:space-y-2">
       {/* Window Period Selection */}
       <Card className="neon-border bg-card">
-        <CardContent className="pt-4 sm:pt-5 pb-3 sm:pb-4">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neon-blue" />
-              <span className="text-xs sm:text-sm font-medium text-foreground">分析區間</span>
+        <CardContent className="pt-3 sm:pt-3.5 pb-2.5 sm:pb-3">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <div className="flex items-center gap-1.5">
+              <BarChart3 className="h-3.5 w-3.5 text-neon-blue" />
+              <span className="text-xs font-medium text-foreground">分析區間</span>
             </div>
-            <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <span>分析最近</span>
-              <span className="font-mono-num font-bold text-neon-orange text-base sm:text-lg">{window}</span>
+              <span className="font-mono-num font-bold text-neon-orange text-sm sm:text-base">{window}</span>
               <span>期</span>
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function PredictTab() {
                 key={w}
                 onClick={() => setWindow(w)}
                 className={cn(
-                  "flex-1 py-2 sm:py-2.5 text-center text-xs sm:text-sm font-mono-num font-medium transition-all border-b-2",
+                  "flex-1 py-1.5 sm:py-2 text-center text-xs font-mono-num font-medium transition-all border-b-2",
                   window === w
                     ? "border-neon-orange text-neon-orange bg-neon-orange/10"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"
@@ -87,7 +87,7 @@ export default function PredictTab() {
               </button>
             ))}
           </div>
-          <p className="mt-1.5 sm:mt-2.5 text-[10px] sm:text-[11px] text-muted-foreground/60">
+          <p className="mt-1 sm:mt-1.5 text-[10px] text-muted-foreground/60">
             選擇較少期數可觀察近期趨勢，較多期數可分析長期分布
           </p>
         </CardContent>
@@ -95,30 +95,28 @@ export default function PredictTab() {
 
       {/* Strategy Selection */}
       <Card className="neon-border bg-card">
-        <CardHeader className="pb-2 sm:pb-3">
-          <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base font-display">
-            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neon-purple" />
-            選擇預測策略
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 sm:grid-cols-3">
+        <CardContent className="pt-3 sm:pt-3.5 pb-2.5 sm:pb-3">
+          <div className="flex items-center gap-1.5 mb-1.5 sm:mb-2">
+            <Sparkles className="h-3.5 w-3.5 text-neon-purple" />
+            <span className="text-xs font-medium text-foreground">選擇預測策略</span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
             {(Object.keys(STRATEGY_LABELS) as StrategyType[]).map(s => (
               <button
                 key={s}
                 data-active={strategy === s}
                 onClick={() => setStrategy(s)}
                 className={cn(
-                  "flex flex-col items-start gap-0.5 rounded-lg border p-2 sm:p-2.5 text-left transition-all",
+                  "flex flex-col items-start gap-0.5 rounded-lg border p-1.5 sm:p-2 text-left transition-all",
                   "text-muted-foreground",
                   strategyColors[s]
                 )}
               >
-                <div className="flex items-center gap-1 sm:gap-1.5 font-medium text-xs sm:text-sm">
-                  <span className="[&>svg]:h-3 [&>svg]:w-3 sm:[&>svg]:h-3.5 sm:[&>svg]:w-3.5">{strategyIcons[s]}</span>
+                <div className="flex items-center gap-1 font-medium text-xs">
+                  <span className="[&>svg]:h-3 [&>svg]:w-3">{strategyIcons[s]}</span>
                   {STRATEGY_LABELS[s]}
                 </div>
-                <span className="text-[10px] sm:text-[11px] opacity-70">{STRATEGY_DESCRIPTIONS[s]}</span>
+                <span className="text-[10px] opacity-70">{STRATEGY_DESCRIPTIONS[s]}</span>
               </button>
             ))}
           </div>
@@ -127,20 +125,20 @@ export default function PredictTab() {
 
       {/* Pick Count - Ball Selector */}
       <Card className="neon-border bg-card">
-        <CardContent className="pt-4 sm:pt-5">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <span className="text-xs sm:text-sm font-medium text-foreground">選取號碼數</span>
-            <span className="text-xs sm:text-sm text-muted-foreground">
+        <CardContent className="pt-3 sm:pt-3.5 pb-2.5 sm:pb-3">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-xs font-medium text-foreground">選取號碼數</span>
+            <span className="text-xs text-muted-foreground">
               已選 <span className="font-mono-num font-bold text-amber-400">{pick}</span> 個號碼
             </span>
           </div>
-          <div className="grid grid-cols-10 gap-1.5 sm:gap-2 w-full">
+          <div className="grid grid-cols-10 gap-1 sm:gap-1.5 w-full">
             {PICK_OPTIONS.map(n => (
               <button
                 key={n}
                 onClick={() => setPick(n)}
                 className={cn(
-                  "relative flex items-center justify-center rounded-full aspect-square text-sm font-mono-num font-bold transition-all duration-200",
+                  "relative flex items-center justify-center rounded-full aspect-square text-xs font-mono-num font-bold transition-all duration-200",
                   pick === n
                     ? "bg-amber-500/20 text-amber-400 border border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.3)] scale-110"
                     : "bg-secondary/80 text-muted-foreground hover:bg-amber-500/10 hover:text-amber-300 hover:scale-105"
@@ -150,23 +148,26 @@ export default function PredictTab() {
               </button>
             ))}
           </div>
-          <p className="mt-1.5 sm:mt-2.5 text-[10px] sm:text-[11px] text-muted-foreground/60 text-center">
-            賓果賓果每期開出 20 個號碼，建議選取 1~10 個號碼，選越多覆蓋率越高但彩金分配不同
+          <p className="mt-1 sm:mt-1.5 text-[10px] text-muted-foreground/60 text-center">
+            賓果賓果每期開出 20 個號碼，建議選取 1~10 個號碼
           </p>
         </CardContent>
       </Card>
 
       {/* Results */}
       <Card className="neon-border bg-card">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-display">預測結果</CardTitle>
+        <CardContent className="pt-3 sm:pt-3.5 pb-2.5 sm:pb-3">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <div className="flex items-center gap-1.5">
+              <Target className="h-3.5 w-3.5 text-neon-blue" />
+              <span className="text-xs font-medium text-foreground">預測結果</span>
+            </div>
             <Button
               variant="outline"
               size="sm"
               onClick={handleRegenerate}
               disabled={isLoading}
-              className="h-7 gap-1 border-neon-purple/30 text-xs hover:bg-neon-purple/10"
+              className="h-6 gap-1 border-neon-purple/30 text-[10px] px-2 hover:bg-neon-purple/10"
             >
               {isLoading ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -176,20 +177,18 @@ export default function PredictTab() {
               重新預測
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-neon-blue" />
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-neon-blue" />
             </div>
           ) : data ? (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {/* 策略說明 */}
-              <p className="text-xs text-muted-foreground text-center">{data.description}</p>
+              <p className="text-[10px] text-muted-foreground text-center">{data.description}</p>
 
               {/* 預測號碼球體 — 紅色明亮漸層，整體置中縮排 */}
               <div className="flex justify-center">
-                <div className="inline-flex flex-wrap justify-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border border-border/20">
+                <div className="inline-flex flex-wrap justify-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-2 sm:py-2.5 rounded-xl bg-secondary/30 border border-border/20">
                   {data.numbers.map((num, idx) => (
                     <PredictBall
                       key={`${num}-${refreshKey}-${idx}`}
@@ -201,7 +200,7 @@ export default function PredictTab() {
               </div>
 
               {/* 底部資訊 */}
-              <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground/60">
+              <div className="flex items-center justify-center gap-2.5 text-[10px] text-muted-foreground/60">
                 <span>
                   策略：<span className="text-foreground/70">{STRATEGY_LABELS[data.strategy as StrategyType]}</span>
                 </span>
@@ -216,7 +215,7 @@ export default function PredictTab() {
               </div>
             </div>
           ) : (
-            <p className="text-center text-sm text-muted-foreground py-4">
+            <p className="text-center text-xs text-muted-foreground py-3">
               尚無資料，請先同步開獎資料
             </p>
           )}

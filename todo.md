@@ -54,3 +54,5 @@
 - [x] UI 改善：統計分析頁分析區間套用號碼預測頁的樣式排版，顏色維持橘底透明
 - [x] UI 改善：參考 bingo-predictor.zeabur.app 分析區間格式，改為扁平 tab 風格（border-b-2 底線 + 無邊框 + 橘色高亮）
 - [x] UI 改善：導航列分頁按鈕縮小（gap-0、px-2 sm:px-3、py-1.5、text-xs sm:text-sm、emoji text-sm sm:text-base）
+- [x] UI 改善：統一各區塊標題文字大小為 text-xs，圖示 h-3.5 w-3.5
+- [x] UI 改善：卡片間距 space-y-1.5 sm:space-y-2，內距 pt-3 pb-2.5，整體更緊密
