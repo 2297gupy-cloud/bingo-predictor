@@ -25,8 +25,9 @@ function getTodayDateStr(): string {
 }
 
 /** Golden ball component */
-function GoldenBall({ number, size = "md" }: { number: number; size?: "sm" | "md" | "lg" }) {
+function GoldenBall({ number, size = "md" }: { number: number; size?: "xs" | "sm" | "md" | "lg" }) {
   const sizeClasses =
+    size === "xs" ? "w-3.5 h-3.5 text-[6px]" :
     size === "sm" ? "w-5 h-5 text-[8px]" :
     size === "lg" ? "w-10 h-10 sm:w-11 sm:h-11 text-sm sm:text-base" :
     "w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm";
@@ -212,9 +213,9 @@ function SlotCard({
       {prediction ? (
         <div className="flex items-center gap-1 justify-center">
           {prediction.goldenBalls.map((n, idx) => (
-            <GoldenBall key={idx} number={n} size="sm" />
+            <GoldenBall key={idx} number={n} size="xs" />
           ))}
-          <span className="text-[9px] text-muted-foreground/50 ml-0.5">
+          <span className="text-[7px] text-muted-foreground/50 ml-0.5">
             {prediction.isManual ? "手動" : "AI"}
           </span>
         </div>
