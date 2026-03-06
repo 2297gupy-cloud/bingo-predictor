@@ -128,13 +128,18 @@ export default function StatsTab() {
               <Loader2 className="h-6 w-6 animate-spin text-neon-blue" />
             </div>
           ) : consecutive && consecutive.length > 0 ? (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            <div className="flex flex-wrap gap-3">
               {consecutive.map(item => (
-                <div
-                  key={item.number}
-                  className="flex items-center gap-2 rounded-lg border border-neon-green/30 bg-neon-green/5 p-2"
-                >
-                  <span className="font-mono-num text-lg font-bold text-neon-green">{item.number}</span>
+                <div key={item.number} className="flex flex-col items-center gap-1">
+                  <div
+                    className="flex items-center justify-center w-11 h-11 rounded-full font-mono-num text-base font-bold text-white"
+                    style={{
+                      background: 'radial-gradient(circle at 35% 35%, #ff6b6b, #e53e3e, #c53030)',
+                      boxShadow: '0 0 12px rgba(239, 68, 68, 0.6), 0 0 4px rgba(239, 68, 68, 0.3)',
+                    }}
+                  >
+                    {String(item.number).padStart(2, '0')}
+                  </div>
                   <span className="text-[10px] text-muted-foreground">連{item.streak}期</span>
                 </div>
               ))}
