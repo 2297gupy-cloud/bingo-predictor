@@ -3,7 +3,6 @@ import BingoBall from "@/components/BingoBall";
 import { usePrediction } from "@/hooks/useBingo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { Loader2, Sparkles, Target, Snowflake, Scale, Shuffle, Clock, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { StrategyType } from "@shared/types";
@@ -26,6 +25,7 @@ const strategyColors: Record<StrategyType, string> = {
 };
 
 const WINDOW_OPTIONS = [1, 2, 3, 5, 10, 15, 20] as const;
+const PICK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 export default function PredictTab() {
   const [strategy, setStrategy] = useState<StrategyType>("balanced");
@@ -119,23 +119,34 @@ export default function PredictTab() {
         </CardContent>
       </Card>
 
-      {/* Pick Count & Number Selection */}
+      {/* Pick Count - Ball Selector */}
       <Card className="neon-border bg-card">
-        <CardContent className="pt-5 space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">選取號碼數</span>
-              <span className="font-mono-num text-neon-blue font-bold">{pick}</span>
-            </div>
-            <Slider
-              value={[pick]}
-              onValueChange={([v]) => setPick(v)}
-              min={1}
-              max={20}
-              step={1}
-              className="w-full"
-            />
+        <CardContent className="pt-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-foreground">選取號碼數</span>
+            <span className="text-sm text-muted-foreground">
+              已選 <span className="font-mono-num font-bold text-neon-purple">{pick}</span> 個號碼
+            </span>
           </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {PICK_OPTIONS.map(n => (
+              <button
+                key={n}
+                onClick={() => setPick(n)}
+                className={cn(
+                  "relative flex items-center justify-center rounded-full w-10 h-10 text-sm font-mono-num font-bold transition-all duration-200",
+                  pick === n
+                    ? "bg-neon-purple text-white shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-110"
+                    : "bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground hover:scale-105"
+                )}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2.5 text-[11px] text-muted-foreground/60 text-center">
+            賓果賓果每期開出 20 個號碼，建議選取 1~10 個號碼，選越多覆蓋率越高但彩金分配不同
+          </p>
         </CardContent>
       </Card>
 
