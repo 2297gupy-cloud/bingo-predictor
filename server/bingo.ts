@@ -44,8 +44,9 @@ export function processRawData(rawData: BingoQueryResult[], dateStr: string): In
   return rawData.map(res => {
     const term = String(res.drawTerm);
     const seq = parseInt(term.slice(-3), 10);
-    const startHour = 7;
-    const totalMinutes = startHour * 60 + seq * 5;
+    // 第一期 (seq=1) 開獎時間為 07:45，每 5 分鐘一期
+    const baseMinutes = 7 * 60 + 45; // 07:45
+    const totalMinutes = baseMinutes + (seq - 1) * 5;
     const hours = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
     const mins = (totalMinutes % 60).toString().padStart(2, "0");
     const drawTime = `${hours}:${mins}`;
@@ -56,9 +57,9 @@ export function processRawData(rawData: BingoQueryResult[], dateStr: string): In
     const drawOrder = (res.openShowOrder || []).map(Number);
 
     const special = Number(res.bullEyeTop) || 0;
-    const sum = sortedNumbers.reduce((a, b) => a + b, 0);
-    const bigSmall = sum > 810 ? "大" : sum < 810 ? "小" : "和";
-    const oddEven = sum % 2 === 1 ? "單" : "雙";
+    // 使用 API 回傳的大小單雙結果
+    const bigSmall = res.highLowTop || "－";
+    const oddEven = res.oddEvenTop || "－";
 
     return {
       drawTerm: term,
