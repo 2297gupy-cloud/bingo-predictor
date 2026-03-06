@@ -67,7 +67,7 @@ function DrawRow({ draw, isFirst }: { draw: DrawData; isFirst: boolean }) {
 }
 
 export default function LatestTab() {
-  const { data, isLoading } = useLatestDraws(10);
+  const { data, isLoading } = useLatestDraws(12);
   const { data: dbStats } = useDbStats();
 
   if (isLoading) {

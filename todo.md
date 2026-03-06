@@ -56,3 +56,4 @@
 - [x] UI 改善：導航列分頁按鈕縮小（gap-0、px-2 sm:px-3、py-1.5、text-xs sm:text-sm、emoji text-sm sm:text-base）
 - [x] UI 改善：統一各區塊標題文字大小為 text-xs，圖示 h-3.5 w-3.5
 - [x] UI 改善：卡片間距 space-y-1.5 sm:space-y-2，內距 pt-3 pb-2.5，整體更緊密
+- [x] UI 改善：即時開獎結果預設顯示從 10 期改為 12 期
