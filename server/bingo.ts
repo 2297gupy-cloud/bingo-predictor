@@ -200,7 +200,7 @@ export async function getConsecutiveStats(window: number = 5) {
 
 // ============ Repeated Triples (連續重複三球) ============
 
-export async function getRepeatedTriples(window: number = 5) {
+export async function getRepeatedTriples(window: number = 10) {
   const db = await getDb();
   if (!db) return [];
 
@@ -212,25 +212,22 @@ export async function getRepeatedTriples(window: number = 5) {
 
   if (draws.length < 3) return [];
 
-  // For each number, find the max consecutive streak from the most recent draw
-  const results: { number: number; streak: number }[] = [];
+  // Count how many times each number appears in the analysis window
+  const freq: Record<number, number> = {};
+  for (let i = 1; i <= 80; i++) freq[i] = 0;
 
-  for (let num = 1; num <= 80; num++) {
-    let streak = 0;
-    for (const draw of draws) {
-      const nums = draw.numbers.split(",").map(Number);
-      if (nums.includes(num)) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-    if (streak >= 3) {
-      results.push({ number: num, streak });
+  for (const draw of draws) {
+    const nums = draw.numbers.split(",").map(Number);
+    for (const n of nums) {
+      freq[n] = (freq[n] || 0) + 1;
     }
   }
 
-  return results.sort((a, b) => b.streak - a.streak);
+  // Return numbers that appear 3 or more times within the window
+  return Object.entries(freq)
+    .filter(([_, count]) => count >= 3)
+    .map(([num, count]) => ({ number: Number(num), count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 // ============ Prediction Strategies ============

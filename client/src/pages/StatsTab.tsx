@@ -154,7 +154,7 @@ export default function StatsTab() {
             <Layers className="h-4 w-4 text-neon-purple" />
             重複三球
             <span className="text-xs text-muted-foreground font-normal ml-1">
-              連續 3 期以上都出現的號碼
+              {window} 期內出現 3 次以上的號碼
             </span>
           </CardTitle>
         </CardHeader>
@@ -171,13 +171,13 @@ export default function StatsTab() {
                   className="flex items-center gap-2 rounded-lg border border-neon-purple/30 bg-neon-purple/5 p-2"
                 >
                   <span className="font-mono-num text-lg font-bold text-neon-purple">{item.number}</span>
-                  <span className="text-[10px] text-muted-foreground">連{item.streak}期</span>
+                  <span className="text-[10px] text-muted-foreground">{item.count}次</span>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-center text-sm text-muted-foreground py-4">
-              {window < 3 ? "需至少 3 期才能分析重複三球" : "目前無連續 3 期以上重複的號碼"}
+              {window < 3 ? "需至少 3 期才能分析重複三球" : "目前無出現 3 次以上的號碼"}
             </p>
           )}
         </CardContent>
