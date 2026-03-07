@@ -158,7 +158,7 @@ function SlotCard({
     }
   }, [formattedData, slot.source]);
 
-  const longPress = useLongPress(handleCopy, 3000);
+  const longPress = useLongPress(handleCopy, 1000);
 
   const hitCount = prediction?.verification.filter(v => v.isHit).length ?? 0;
   const totalCount = prediction?.verification.length ?? 0;
@@ -222,7 +222,7 @@ function SlotCard({
           <span className="text-[10px] text-muted-foreground/40">尚未分析</span>
         </div>
       )}
-      <p className="text-[7px] text-muted-foreground/25 text-center mt-0">長按複製</p>
+      <p className="text-[7px] text-muted-foreground/25 text-center mt-0">長按1秒複製</p>
     </div>
   );
 }
@@ -378,7 +378,7 @@ export default function AiStrategyTab() {
             </div>
           </div>
           <p className="text-[10px] text-muted-foreground/60">
-            選擇時段 → AI 分析 → 驗證命中 · 長按卡片 3 秒可複製整點數據
+            選擇時段 → AI 分析 → 驗證命中 · 長按卡片 1 秒可複製整點數據
           </p>
         </CardContent>
       </Card>
