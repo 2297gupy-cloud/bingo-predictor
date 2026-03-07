@@ -113,7 +113,7 @@ function NumberDistributionBlock({
             <table className="border-collapse" style={{ minWidth: `${80 * 14 + 44}px`, borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th className="sticky left-0 z-10 bg-card text-[7px] text-muted-foreground/60 font-normal px-0.5 py-0.5 text-right border-r border-white/20 min-w-[28px]">時間</th>
+                  <th className="sticky left-0 z-10 bg-card text-[6px] text-muted-foreground/60 font-normal px-0 py-0.5 text-right border-r border-white/20 min-w-[20px]">時</th>
                   {NUMS.map(n => (
                     <th
                       key={n}
@@ -133,7 +133,7 @@ function NumberDistributionBlock({
                   const hasDraw = !!numSet;
                   return (
                     <tr key={time} className="border-t border-white/10">
-                      <td className="sticky left-0 z-10 bg-card text-[7px] font-mono-num text-muted-foreground/60 px-0.5 py-0.5 text-right border-r border-white/20 whitespace-nowrap">
+                      <td className="sticky left-0 z-10 bg-card text-[6px] font-mono-num text-muted-foreground/60 px-0 py-0.5 text-right border-r border-white/20 whitespace-nowrap">
                         {time}
                       </td>
                       {NUMS.map(n => {
