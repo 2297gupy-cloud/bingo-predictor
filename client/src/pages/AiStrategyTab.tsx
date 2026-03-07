@@ -11,6 +11,7 @@ import {
   useAiManualInput,
   useAiFormattedData,
   useAiDeletePrediction,
+  useAiHourDraws,
 } from "@/hooks/useBingo";
 import { toast } from "sonner";
 
@@ -45,6 +46,126 @@ function GoldenBall({ number, size = "md" }: { number: number; size?: "xs" | "sm
     >
       {String(number).padStart(2, "0")}
     </div>
+  );
+}
+
+/** Number Distribution Block — shows 15 draws for the target hour, 01~80 columns, horizontal scroll */
+function NumberDistributionBlock({
+  dateStr,
+  targetHour,
+  goldenBalls,
+}: {
+  dateStr: string;
+  targetHour: string | null;
+  goldenBalls?: number[];
+}) {
+  const { data: draws, isLoading } = useAiHourDraws(
+    dateStr,
+    targetHour ?? "",
+  );
+
+  if (!targetHour) return null;
+
+  // Build the 12 expected time slots HH:00 ~ HH:55
+  const hourPad = targetHour.padStart(2, "0");
+  const timeSlots: string[] = [];
+  for (let m = 0; m < 60; m += 5) {
+    timeSlots.push(`${hourPad}:${String(m).padStart(2, "0")}`);
+  }
+
+  // Map time -> numbers set
+  const drawMap = new Map<string, Set<number>>();
+  if (draws) {
+    for (const d of draws) {
+      drawMap.set(d.time, new Set(d.numbers));
+    }
+  }
+
+  // Take last 15 draws (most recent at top)
+  const displaySlots = timeSlots.slice(-15);
+  const goldenSet = new Set(goldenBalls ?? []);
+
+  const NUMS = Array.from({ length: 80 }, (_, i) => i + 1);
+
+  return (
+    <Card className="neon-border bg-card">
+      <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className="text-xs font-medium text-foreground">數字分布</span>
+          <span className="text-[10px] text-muted-foreground">{hourPad}時 近15期</span>
+          <div className="ml-auto flex items-center gap-2 text-[9px]">
+            <span className="flex items-center gap-0.5">
+              <span className="inline-block w-2 h-2 rounded-sm bg-amber-500/80"></span>
+              <span className="text-muted-foreground">開出</span>
+            </span>
+            <span className="flex items-center gap-0.5">
+              <span className="inline-block w-2 h-2 rounded-sm bg-amber-400 ring-1 ring-amber-300"></span>
+              <span className="text-muted-foreground">預測球</span>
+            </span>
+          </div>
+        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-3">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+            <table className="border-collapse" style={{ minWidth: `${80 * 14 + 44}px` }}>
+              <thead>
+                <tr>
+                  <th className="sticky left-0 z-10 bg-card text-[8px] text-muted-foreground/60 font-normal px-1 py-0.5 text-right border-r border-border/20 min-w-[40px]">時間</th>
+                  {NUMS.map(n => (
+                    <th
+                      key={n}
+                      className={cn(
+                        "text-[7px] font-mono-num font-normal text-center px-0 py-0.5 w-[13px] min-w-[13px]",
+                        goldenSet.has(n) ? "text-amber-400 font-bold" : "text-muted-foreground/40"
+                      )}
+                    >
+                      {String(n).padStart(2, "0")}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {displaySlots.map(time => {
+                  const numSet = drawMap.get(time);
+                  const hasDraw = !!numSet;
+                  return (
+                    <tr key={time} className="border-t border-border/10">
+                      <td className="sticky left-0 z-10 bg-card text-[8px] font-mono-num text-muted-foreground/60 px-1 py-0.5 text-right border-r border-border/20 whitespace-nowrap">
+                        {time}
+                      </td>
+                      {NUMS.map(n => {
+                        const isDrawn = hasDraw && numSet!.has(n);
+                        const isGolden = goldenSet.has(n);
+                        return (
+                          <td key={n} className="text-center p-0 w-[13px]">
+                            {isDrawn ? (
+                              <div
+                                className={cn(
+                                  "mx-auto my-0.5 rounded-sm",
+                                  "w-[10px] h-[10px]",
+                                  isGolden
+                                    ? "bg-amber-400 ring-1 ring-amber-300 shadow-[0_0_4px_rgba(251,191,36,0.8)]"
+                                    : "bg-amber-600/70"
+                                )}
+                              />
+                            ) : (
+                              <div className="mx-auto my-0.5 w-[10px] h-[10px]" />
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -587,6 +708,13 @@ export default function AiStrategyTab() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Number Distribution Block */}
+      <NumberDistributionBlock
+        dateStr={dateStr}
+        targetHour={effectiveVerifySlot}
+        goldenBalls={verifyPrediction?.goldenBalls}
+      />
 
       {/* Verification Section */}
       <Card className="neon-border bg-card">
