@@ -115,3 +115,12 @@ export function useAiManualInput() {
     },
   });
 }
+
+export function useAiDeletePrediction() {
+  const utils = trpc.useUtils();
+  return trpc.bingo.aiDeletePrediction.useMutation({
+    onSuccess: () => {
+      utils.bingo.aiPredictions.invalidate();
+    },
+  });
+}

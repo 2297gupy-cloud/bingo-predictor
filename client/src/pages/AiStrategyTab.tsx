@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Copy, ClipboardCheck, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Copy, ClipboardCheck, ChevronLeft, ChevronRight, CalendarDays, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAiPredictions,
@@ -10,6 +10,7 @@ import {
   useAiAnalyze,
   useAiManualInput,
   useAiFormattedData,
+  useAiDeletePrediction,
 } from "@/hooks/useBingo";
 import { toast } from "sonner";
 
@@ -143,6 +144,7 @@ function SlotCard({
   isCurrent,
   isSelected,
   onSelect,
+  onDelete,
   dateStr,
 }: {
   slot: { source: string; target: string; label: string; draws: number };
@@ -155,6 +157,7 @@ function SlotCard({
   isCurrent: boolean;
   isSelected: boolean;
   onSelect: () => void;
+  onDelete?: () => void;
   dateStr: string;
 }) {
   const [copied, setCopied] = useState(false);
@@ -208,6 +211,18 @@ function SlotCard({
           )}
         </div>
         <div className="flex items-center gap-1">
+          {prediction && onDelete && (
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="h-3.5 w-3.5 flex items-center justify-center rounded hover:bg-red-500/20 text-muted-foreground/30 hover:text-red-400 transition-colors"
+              title="清除球號"
+            >
+              <Trash2 className="h-2.5 w-2.5" />
+            </button>
+          )}
           {copied ? (
             <ClipboardCheck className="h-3 w-3 text-green-400" />
           ) : (
@@ -291,6 +306,7 @@ export default function AiStrategyTab() {
   const { data: predictions, isLoading: loadingPredictions } = useAiPredictions(dateStr);
   const aiAnalyze = useAiAnalyze();
   const aiManualInput = useAiManualInput();
+  const aiDeletePrediction = useAiDeletePrediction();
 
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [verifySlot, setVerifySlot] = useState<string | null>(null);
@@ -421,6 +437,14 @@ export default function AiStrategyTab() {
                   isCurrent={isCurrent}
                   isSelected={isSelected}
                   onSelect={() => setSelectedSlot(slot.source)}
+                  onDelete={pred ? async () => {
+                    try {
+                      await aiDeletePrediction.mutateAsync({ date: dateStr, sourceHour: slot.source });
+                      toast.success(`已清除 ${slot.source.padStart(2, "0")}時段球號`);
+                    } catch (err: any) {
+                      toast.error(`清除失敗：${err.message}`);
+                    }
+                  } : undefined}
                   dateStr={dateStr}
                 />
               );

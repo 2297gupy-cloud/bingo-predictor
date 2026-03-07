@@ -147,6 +147,26 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    // AI 一星策略：刪除指定時段的預測結果
+    aiDeletePrediction: publicProcedure
+      .input(z.object({
+        date: z.string(),
+        sourceHour: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const { aiPredictions: aiPred } = await import("../drizzle/schema");
+        const { and: dbAnd, eq: dbEq } = await import("drizzle-orm");
+        await db.delete(aiPred).where(
+          dbAnd(
+            dbEq(aiPred.predDate, input.date),
+            dbEq(aiPred.sourceHour, input.sourceHour)
+          )
+        );
+        return { success: true };
+      }),
+
     // AI 一星策略：取得時段列表和目前時段
     aiHourSlots: publicProcedure.query(() => {
       const current = getCurrentHourSlot();
