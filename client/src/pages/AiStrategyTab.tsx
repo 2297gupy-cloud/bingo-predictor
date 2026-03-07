@@ -162,7 +162,8 @@ function SlotCard({
 
   const hitCount = prediction?.verification.filter(v => v.isHit).length ?? 0;
   const totalCount = prediction?.verification.length ?? 0;
-  const hitRate = totalCount > 0 ? Math.round((hitCount / totalCount) * 100) : 0;
+  const FIXED_TOTAL = 12; // 固定分母為 12 期
+  const hitRate = totalCount > 0 ? Math.round((hitCount / FIXED_TOTAL) * 100) : 0;
 
   return (
     <div
@@ -203,7 +204,7 @@ function SlotCard({
               "text-[10px] font-mono-num",
               hitRate >= 50 ? "text-green-400" : hitRate > 0 ? "text-amber-400" : "text-muted-foreground"
             )}>
-              {hitCount}/{totalCount}
+              {hitCount}/{FIXED_TOTAL}
             </span>
           )}
         </div>
@@ -579,7 +580,7 @@ export default function AiStrategyTab() {
                 <span className="text-[10px] text-muted-foreground">
                   命中 <span className="font-mono-num font-bold text-green-400">
                     {verifyPrediction.verification.filter((v: any) => v.isHit).length}
-                  </span>/{verifyPrediction.verification.length} 期
+                  </span>/12 期
                 </span>
               </div>
               <div className="space-y-0.5">
@@ -589,7 +590,7 @@ export default function AiStrategyTab() {
               </div>
               <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px]">
                 <span className="text-green-400">
-                  命中率：{Math.round((verifyPrediction.verification.filter((v: any) => v.isHit).length / verifyPrediction.verification.length) * 100)}%
+                  命中率：{Math.round((verifyPrediction.verification.filter((v: any) => v.isHit).length / 12) * 100)}%
                 </span>
                 <span className="text-muted-foreground">
                   總命中球數：{verifyPrediction.verification.reduce((sum: number, v: any) => sum + v.hits.length, 0)}
