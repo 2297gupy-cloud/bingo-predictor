@@ -175,7 +175,7 @@ function SlotCard({
     }
   }, [formattedData, slot.source]);
 
-  const longPress = useLongPress(handleCopy, 1000);
+  const longPress = useLongPress(handleCopy, 300);
 
   const hitCount = prediction?.verification.filter(v => v.isHit).length ?? 0;
   const totalCount = prediction?.verification.length ?? 0;
@@ -252,7 +252,7 @@ function SlotCard({
           <span className="text-[10px] text-muted-foreground/40">尚未分析</span>
         </div>
       )}
-      <p className="text-[7px] text-muted-foreground/25 text-center mt-0">長按1秒複製</p>
+      <p className="text-[7px] text-muted-foreground/25 text-center mt-0">長押複製</p>
     </div>
   );
 }
