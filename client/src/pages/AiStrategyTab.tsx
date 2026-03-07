@@ -417,12 +417,33 @@ export default function AiStrategyTab() {
       {/* Time Slot Grid */}
       <Card className="neon-border bg-card">
         <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Clock className="h-3.5 w-3.5 text-amber-400" />
-            <span className="text-xs font-medium text-foreground">各時段總覽</span>
-            <span className="text-[10px] text-muted-foreground ml-auto">
-              {predictions?.length || 0} 個時段已分析
+          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+            <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+            <span className="text-xs font-medium text-foreground shrink-0">各時段總覽</span>
+            <span className="text-[10px] text-muted-foreground">
+              {predictions?.length || 0} 個已分析
             </span>
+            {predictions && predictions.length > 0 && (
+              <button
+                onClick={async () => {
+                  if (!window.confirm(`確定清除 ${dateStr} 所有時段的球號？`)) return;
+                  try {
+                    await Promise.all(
+                      predictions.map(pred =>
+                        aiDeletePrediction.mutateAsync({ date: dateStr, sourceHour: pred.sourceHour })
+                      )
+                    );
+                    toast.success(`已清除所有時段球號`);
+                  } catch (err: any) {
+                    toast.error(`清除失敗：${err.message}`);
+                  }
+                }}
+                className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 transition-colors shrink-0"
+              >
+                <Trash2 className="h-3 w-3" />
+                <span>清除全部</span>
+              </button>
+            )}
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-1">
             {slots.map(slot => {
