@@ -56,8 +56,11 @@ function VerifyRow({ item }: { item: { term: string; index: number; time: string
         ? "border-green-500/30 bg-green-500/5"
         : "border-border/20 bg-transparent"
     )}>
-      <span className="font-mono-num text-muted-foreground w-5 text-center shrink-0">[{item.index}]</span>
-      <span className="font-mono-num text-muted-foreground w-10 shrink-0">{item.time}</span>
+      {/* 期數 + 序號 */}
+      <div className="flex flex-col shrink-0 min-w-0">
+        <span className="font-mono-num text-muted-foreground text-[9px] leading-tight">[{item.term}]</span>
+        <span className="font-mono-num text-muted-foreground/40 text-[8px] leading-tight text-center">[{item.index}] {item.time}</span>
+      </div>
       <div className="flex-1 min-w-0">
         {item.isHit ? (
           <div className="flex items-center gap-1 flex-wrap">
