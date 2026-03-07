@@ -95,11 +95,11 @@ function NumberDistributionBlock({
           <span className="text-[10px] text-muted-foreground">{hourPad}時 近15期</span>
           <div className="ml-auto flex items-center gap-2 text-[9px]">
             <span className="flex items-center gap-0.5">
-              <span className="inline-block w-2 h-2 rounded-sm bg-amber-500/80"></span>
+              <span className="inline-block w-2 h-2 rounded-sm bg-emerald-600/70"></span>
               <span className="text-muted-foreground">開出</span>
             </span>
             <span className="flex items-center gap-0.5">
-              <span className="inline-block w-2 h-2 rounded-sm bg-amber-400 ring-1 ring-amber-300"></span>
+              <span className="inline-block w-2 h-2 rounded-sm bg-emerald-400 ring-1 ring-emerald-300"></span>
               <span className="text-muted-foreground">預測球</span>
             </span>
           </div>
@@ -110,16 +110,16 @@ function NumberDistributionBlock({
           </div>
         ) : (
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
-            <table className="border-collapse" style={{ minWidth: `${80 * 14 + 44}px` }}>
+            <table className="border-collapse" style={{ minWidth: `${80 * 14 + 44}px`, borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th className="sticky left-0 z-10 bg-card text-[8px] text-muted-foreground/60 font-normal px-1 py-0.5 text-right border-r border-border/20 min-w-[40px]">時間</th>
+                  <th className="sticky left-0 z-10 bg-card text-[8px] text-muted-foreground/60 font-normal px-1 py-0.5 text-right border-r border-white/20 min-w-[40px]">時間</th>
                   {NUMS.map(n => (
                     <th
                       key={n}
                       className={cn(
-                        "text-[7px] font-mono-num font-normal text-center px-0 py-0.5 w-[13px] min-w-[13px]",
-                        goldenSet.has(n) ? "text-amber-400 font-bold" : "text-muted-foreground/40"
+                        "text-[7px] font-mono-num font-normal text-center px-0 py-0.5 w-[13px] min-w-[13px] border-r border-b border-white/10",
+                        goldenSet.has(n) ? "text-emerald-400 font-bold" : "text-muted-foreground/40"
                       )}
                     >
                       {String(n).padStart(2, "0")}
@@ -132,23 +132,23 @@ function NumberDistributionBlock({
                   const numSet = drawMap.get(time);
                   const hasDraw = !!numSet;
                   return (
-                    <tr key={time} className="border-t border-border/10">
-                      <td className="sticky left-0 z-10 bg-card text-[8px] font-mono-num text-muted-foreground/60 px-1 py-0.5 text-right border-r border-border/20 whitespace-nowrap">
+                    <tr key={time} className="border-t border-white/10">
+                      <td className="sticky left-0 z-10 bg-card text-[8px] font-mono-num text-muted-foreground/60 px-1 py-0.5 text-right border-r border-white/20 whitespace-nowrap">
                         {time}
                       </td>
                       {NUMS.map(n => {
                         const isDrawn = hasDraw && numSet!.has(n);
                         const isGolden = goldenSet.has(n);
                         return (
-                          <td key={n} className="text-center p-0 w-[13px]">
+                          <td key={n} className="text-center p-0 w-[13px] border-r border-b border-white/10">
                             {isDrawn ? (
                               <div
                                 className={cn(
-                                  "mx-auto my-0.5 rounded-sm",
+                                  "mx-auto my-0.5",
                                   "w-[10px] h-[10px]",
                                   isGolden
-                                    ? "bg-amber-400 ring-1 ring-amber-300 shadow-[0_0_4px_rgba(251,191,36,0.8)]"
-                                    : "bg-amber-600/70"
+                                    ? "bg-emerald-400 ring-1 ring-emerald-300 shadow-[0_0_4px_rgba(52,211,153,0.8)]"
+                                    : "bg-emerald-600/70"
                                 )}
                               />
                             ) : (
