@@ -260,10 +260,12 @@ export interface VerificationResult {
   hits: number[]; // which golden balls were hit
   missed: number[]; // which golden balls were missed
   isHit: boolean; // at least one golden ball hit
+  pending: boolean; // true = not yet drawn
 }
 
 /**
  * Verify AI prediction against actual draws in the target hour.
+ * Always returns 12 entries; undrawn slots are marked with pending: true.
  */
 export async function verifyPrediction(
   predDate: string,
@@ -271,20 +273,44 @@ export async function verifyPrediction(
   goldenBalls: number[]
 ): Promise<VerificationResult[]> {
   const draws = await getHourDraws(predDate, targetHour);
-  
-  return draws.map((draw, idx) => {
-    const drawSet = new Set(draw.numbers);
-    const hits = goldenBalls.filter(b => drawSet.has(b));
-    const missed = goldenBalls.filter(b => !drawSet.has(b));
-    
-    return {
-      term: draw.term,
-      index: idx + 1,
-      time: draw.time,
-      hits,
-      missed,
-      isHit: hits.length > 0,
-    };
+  const hourPad = targetHour.padStart(2, "0");
+
+  // Build the 12 expected time slots for this hour: HH:00, HH:05, ..., HH:55
+  const expectedTimes: string[] = [];
+  for (let m = 0; m < 60; m += 5) {
+    expectedTimes.push(`${hourPad}:${String(m).padStart(2, "0")}`);
+  }
+
+  // Build a map of time -> draw
+  const drawByTime = new Map(draws.map(d => [d.time, d]));
+
+  return expectedTimes.map((time, idx) => {
+    const draw = drawByTime.get(time);
+    if (draw) {
+      const drawSet = new Set(draw.numbers);
+      const hits = goldenBalls.filter(b => drawSet.has(b));
+      const missed = goldenBalls.filter(b => !drawSet.has(b));
+      return {
+        term: draw.term,
+        index: idx + 1,
+        time,
+        hits,
+        missed,
+        isHit: hits.length > 0,
+        pending: false,
+      };
+    } else {
+      // Not yet drawn
+      return {
+        term: "",
+        index: idx + 1,
+        time,
+        hits: [],
+        missed: goldenBalls,
+        isHit: false,
+        pending: true,
+      };
+    }
   });
 }
 

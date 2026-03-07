@@ -47,32 +47,46 @@ function GoldenBall({ number, size = "md" }: { number: number; size?: "xs" | "sm
   );
 }
 
-/** Verification row */
-function VerifyRow({ item }: { item: { term: string; index: number; time: string; hits: number[]; missed: number[]; isHit: boolean } }) {
+/** Verification row — horizontal layout */
+function VerifyRow({ item }: { item: { term: string; index: number; time: string; hits: number[]; missed: number[]; isHit: boolean; pending?: boolean } }) {
+  if (item.pending) {
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs border border-border/10 bg-transparent opacity-40">
+        {/* 序號 */}
+        <span className="font-mono-num text-muted-foreground/50 text-[9px] shrink-0 w-4 text-right">[{item.index}]</span>
+        {/* 時間 */}
+        <span className="font-mono-num text-muted-foreground/50 text-[9px] shrink-0 w-9">{item.time}</span>
+        {/* 等待開獎 */}
+        <span className="text-[9px] text-muted-foreground/40 italic">等待開獎...</span>
+      </div>
+    );
+  }
   return (
     <div className={cn(
-      "flex items-center gap-1.5 px-2 py-1 rounded text-xs border",
+      "flex items-center gap-1.5 px-2 py-0.5 rounded text-xs border",
       item.isHit
         ? "border-green-500/30 bg-green-500/5"
         : "border-border/20 bg-transparent"
     )}>
-      {/* 期數 + 序號 */}
-      <div className="flex flex-col shrink-0 min-w-0">
-        <span className="font-mono-num text-muted-foreground text-[9px] leading-tight">[{item.term}]</span>
-        <span className="font-mono-num text-muted-foreground/40 text-[8px] leading-tight text-center">[{item.index}] {item.time}</span>
-      </div>
-      <div className="flex-1 min-w-0">
+      {/* 序號 */}
+      <span className="font-mono-num text-muted-foreground/40 text-[9px] shrink-0 w-4 text-right">[{item.index}]</span>
+      {/* 時間 */}
+      <span className="font-mono-num text-muted-foreground/60 text-[9px] shrink-0 w-9">{item.time}</span>
+      {/* 期數 */}
+      <span className="font-mono-num text-muted-foreground/40 text-[9px] shrink-0">{item.term}</span>
+      {/* 命中結果 */}
+      <div className="flex-1 flex items-center gap-1 min-w-0">
         {item.isHit ? (
-          <div className="flex items-center gap-1 flex-wrap">
+          <>
             {item.hits.map(n => (
-              <span key={n} className="font-mono-num font-bold text-amber-400">
-                {item.hits.length > 1 && "*"}{String(n).padStart(2, "0")}
+              <span key={n} className="font-mono-num font-bold text-amber-400 text-[10px]">
+                {item.hits.length > 1 ? `*${String(n).padStart(2, "0")}` : String(n).padStart(2, "0")}
               </span>
             ))}
             <CheckCircle2 className="h-3 w-3 text-green-400 shrink-0" />
-          </div>
+          </>
         ) : (
-          <span className="text-muted-foreground/60">未中獎</span>
+          <span className="text-muted-foreground/50 text-[9px]">未中獎</span>
         )}
       </div>
     </div>
@@ -577,15 +591,35 @@ export default function AiStrategyTab() {
                     <GoldenBall key={n} number={n} size="sm" />
                   ))}
                 </div>
-                <span className="text-[10px] text-muted-foreground">
-                  命中 <span className="font-mono-num font-bold text-green-400">
-                    {verifyPrediction.verification.filter((v: any) => v.isHit).length}
-                  </span>/12 期
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">
+                    命中 <span className="font-mono-num font-bold text-green-400">
+                      {verifyPrediction.verification.filter((v: any) => v.isHit).length}
+                    </span>/12 期
+                  </span>
+                  {/* 複製整個驗證結果按鈕 */}
+                  <button
+                    onClick={() => {
+                      const hitCount = verifyPrediction.verification.filter((v: any) => v.isHit).length;
+                      const balls = verifyPrediction.goldenBalls.map((n: number) => String(n).padStart(2, "0")).join(" ");
+                      const lines = verifyPrediction.verification.map((v: any) => {
+                        if (v.pending) return `[${v.index}] ${v.time} 等待開獎`;
+                        const hitStr = v.isHit ? v.hits.map((n: number) => (v.hits.length > 1 ? `*${String(n).padStart(2,"0")}` : String(n).padStart(2,"0"))).join(" ") + " ✅" : "未中獎";
+                        return `[${v.term}][${v.index}] ${v.time} | ${hitStr}`;
+                      }).join("\n");
+                      const text = `驗證結果 號碼：${balls}\n命中 ${hitCount}/12 期（命中率：${Math.round(hitCount/12*100)}%）\n\n${lines}`;
+                      navigator.clipboard.writeText(text).then(() => toast.success("驗證結果已複製"));
+                    }}
+                    className="flex items-center gap-0.5 text-[9px] text-muted-foreground/60 hover:text-amber-400 transition-colors"
+                  >
+                    <Copy className="h-3 w-3" />
+                    <span>複製</span>
+                  </button>
+                </div>
               </div>
               <div className="space-y-0.5">
-                {verifyPrediction.verification.map((item: any) => (
-                  <VerifyRow key={item.term} item={item} />
+                {verifyPrediction.verification.map((item: any, idx: number) => (
+                  <VerifyRow key={item.term || `pending-${idx}`} item={item} />
                 ))}
               </div>
               <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px]">
