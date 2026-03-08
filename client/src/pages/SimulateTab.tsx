@@ -272,7 +272,7 @@ export default function SimulateTab() {
                     )}
                   >
                     <div className="font-bold text-xs sm:text-sm">{star}星</div>
-                    <div className="text-xs text-gray-400 truncate">NT${formatNumber(STAR_PRIZES[star])}</div>
+                    <div className="text-xs sm:text-xs text-gray-400 truncate leading-tight">NT${formatNumber(STAR_PRIZES[star]).slice(0, 6)}</div>
                   </button>
                 ))}
               </div>
