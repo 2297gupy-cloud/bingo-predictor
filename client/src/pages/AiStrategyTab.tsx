@@ -73,11 +73,14 @@ function NumberDistributionBlock({
     timeSlots.push(`${hourPad}:${String(m).padStart(2, "0")}`);
   }
 
-  // Map time -> numbers set
-  const drawMap = new Map<string, Set<number>>();
+  // Map time -> numbers set and pending status
+  const drawMap = new Map<string, { numbers: Set<number>; pending: boolean }>();
   if (draws) {
     for (const d of draws) {
-      drawMap.set(d.time, new Set(d.numbers));
+      drawMap.set(d.time, { 
+        numbers: new Set(d.numbers),
+        pending: (d as any).pending ?? false
+      });
     }
   }
 
@@ -129,15 +132,16 @@ function NumberDistributionBlock({
               </thead>
               <tbody>
                 {displaySlots.map(time => {
-                  const numSet = drawMap.get(time);
-                  const hasDraw = !!numSet;
+                  const drawData = drawMap.get(time);
+                  const hasDraw = drawData && !drawData.pending;
+                  const isPending = drawData?.pending ?? false;
                   return (
-                    <tr key={time} className="border-t border-white/10">
-                      <td className="sticky left-0 z-10 bg-card text-[6px] font-mono-num text-muted-foreground/60 px-0 py-0.5 text-right border-r border-white/20 whitespace-nowrap">
+                    <tr key={time} className={cn("border-t border-white/10", isPending && "opacity-50")}>
+                      <td className={cn("sticky left-0 z-10 bg-card text-[6px] font-mono-num px-0 py-0.5 text-right border-r border-white/20 whitespace-nowrap", isPending ? "text-muted-foreground/30" : "text-muted-foreground/60")}>
                         {time}
                       </td>
                       {NUMS.map(n => {
-                        const isDrawn = hasDraw && numSet!.has(n);
+                        const isDrawn = hasDraw && drawData!.numbers.has(n);
                         const isGolden = goldenSet.has(n);
                         return (
                           <td key={n} className="text-center p-0 w-[13px] border-r border-b border-white/10">

@@ -66,11 +66,36 @@ export async function getHourDraws(dateStr: string, hour: string) {
     )
     .orderBy(bingoDraws.drawTerm);
 
-  return draws.map(d => ({
-    term: d.drawTerm,
-    time: d.drawTime,
-    numbers: d.numbers.split(",").map(Number),
-  }));
+  // Generate 15 time slots (every 5 minutes from XX:00 to XX:55)
+  const timeSlots = Array.from({ length: 15 }, (_, i) => {
+    const minutes = i * 5;
+    return `${hour.padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  });
+
+  // Create a map of existing draws by time
+  const drawMap = new Map(
+    draws.map(d => [d.drawTime, d])
+  );
+
+  // Return 15 slots with pending flag for unopened draws
+  return timeSlots.map(time => {
+    const draw = drawMap.get(time);
+    if (draw) {
+      return {
+        term: draw.drawTerm,
+        time: draw.drawTime,
+        numbers: draw.numbers.split(",").map(Number),
+        pending: false,
+      };
+    } else {
+      return {
+        term: "",
+        time: time,
+        numbers: [],
+        pending: true,
+      };
+    }
+  });
 }
 
 // ============ AI Analysis via Forge API ============
