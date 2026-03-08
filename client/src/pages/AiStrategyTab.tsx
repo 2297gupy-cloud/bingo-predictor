@@ -755,12 +755,12 @@ export default function AiStrategyTab() {
       </Card>
 
       {/* Number Distribution Block */}
-      {/* 即時數字分布應該顯示當前選擇時段的開獎數據 */}
-      {effectiveSlot && (
+      {/* 即時數字分布獨立運作，始終顯示當前正在開獎的時段的數據，不受各時段總覽點擊的影響 */}
+      {currentSlot?.source && (
         <NumberDistributionBlock
           dateStr={dateStr}
-          targetHour={effectiveSlot}
-          goldenBalls={verifyPrediction?.goldenBalls}
+          targetHour={currentSlot.source}
+          goldenBalls={undefined}
         />
       )}
 
