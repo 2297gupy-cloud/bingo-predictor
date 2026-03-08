@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 interface BetTicket {
   id: number;
   star: number;
-  gameType: "big" | "small" | "oddeven";
-  betType: "big" | "small" | "odd" | "even";
+  gameType: "big" | "small" | "oddeven" | "base";
+  betType: "big" | "small" | "odd" | "even" | "base";
   multiplier: number | null;
   periods: number | null;
   totalBet: number;
@@ -54,9 +54,8 @@ const STAR_PRIZES: Record<number, number> = {
 };
 
 export default function SimulateTab() {
-  // 星級選擇（單選）
+  // 選擇星級玩法（用於選號）
   const [selectedStar, setSelectedStar] = useState<number | null>(null);
-  // 選號（1-80）
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
   // 猜大小選擇
@@ -79,18 +78,20 @@ export default function SimulateTab() {
 
   // 計算投注金額
   const calculateBetAmount = (star: number, multiplier: number | null, periods: number | null) => {
-    if (multiplier === null || periods === null) return 0;
+    if (multiplier === null || periods === null) return BASE_BET * star * (periods || 1);
     return BASE_BET * star * multiplier * periods;
   };
 
   // 計算預估獎金
   const calculateEstimatedWinnings = () => {
     let total = 0;
-    if (betStar && selectedBigSmall.length > 0 && bigSmallMultiplier && periods) {
-      total += 150 * betStar * bigSmallMultiplier * periods * selectedBigSmall.length;
+    if (betStar && selectedBigSmall.length > 0 && periods) {
+      const multiplier = bigSmallMultiplier || 1;
+      total += 150 * betStar * multiplier * periods * selectedBigSmall.length;
     }
-    if (betStar && selectedOddEven.length > 0 && oddEvenMultiplier && periods) {
-      total += 150 * betStar * oddEvenMultiplier * periods * selectedOddEven.length;
+    if (betStar && selectedOddEven.length > 0 && periods) {
+      const multiplier = oddEvenMultiplier || 1;
+      total += 150 * betStar * multiplier * periods * selectedOddEven.length;
     }
     return total;
   };
@@ -105,54 +106,54 @@ export default function SimulateTab() {
     const newTickets: BetTicket[] = [];
     let ticketId = tickets.length + 1;
 
+    // 添加大小投注
+    selectedBigSmall.forEach(type => {
+      newTickets.push({
+        id: ticketId++,
+        star: betStar,
+        gameType: type === "big" ? "big" : "small",
+        betType: type,
+        multiplier: bigSmallMultiplier,
+        periods: periods || 1,
+        totalBet: calculateBetAmount(betStar, bigSmallMultiplier, periods || 1),
+      });
+    });
+
+    // 添加單雙投注
+    selectedOddEven.forEach(type => {
+      newTickets.push({
+        id: ticketId++,
+        star: betStar,
+        gameType: "oddeven",
+        betType: type,
+        multiplier: oddEvenMultiplier,
+        periods: periods || 1,
+        totalBet: calculateBetAmount(betStar, oddEvenMultiplier, periods || 1),
+      });
+    });
+
     // 如果沒有選擇玩法，只投注基礎投注（星級）
     if (selectedBigSmall.length === 0 && selectedOddEven.length === 0) {
       newTickets.push({
         id: ticketId++,
         star: betStar,
-        gameType: "big",
-        betType: "big",
+        gameType: "base",
+        betType: "base",
         multiplier: null,
         periods: periods || 1,
         totalBet: BASE_BET * betStar * (periods || 1),
-      });
-    } else {
-
-      // 添加大小投注
-      selectedBigSmall.forEach(type => {
-        if (bigSmallMultiplier !== null) {
-          newTickets.push({
-            id: ticketId++,
-            star: betStar,
-            gameType: type === "big" ? "big" : "small",
-            betType: type,
-            multiplier: bigSmallMultiplier,
-            periods: periods || 1,
-            totalBet: calculateBetAmount(betStar, bigSmallMultiplier, periods || 1),
-          });
-        }
-      });
-
-      // 添加單雙投注
-      selectedOddEven.forEach(type => {
-        if (oddEvenMultiplier !== null) {
-          newTickets.push({
-            id: ticketId++,
-            star: betStar,
-            gameType: "oddeven",
-            betType: type,
-            multiplier: oddEvenMultiplier,
-            periods: periods || 1,
-            totalBet: calculateBetAmount(betStar, oddEvenMultiplier, periods || 1),
-          });
-        }
       });
     }
 
     if (newTickets.length > 0) {
       setTickets([...newTickets, ...tickets]);
-    } else {
-      alert("請選擇投注倍數和玩法");
+      // 清除投注選擇
+      setBetStar(null);
+      setSelectedBigSmall([]);
+      setSelectedOddEven([]);
+      setBigSmallMultiplier(null);
+      setOddEvenMultiplier(null);
+      setPeriods(null);
     }
   };
 
@@ -165,13 +166,13 @@ export default function SimulateTab() {
     const evenCount = drawNumbers.filter(n => n % 2 === 0).length;
 
     const winningTickets = tickets.filter(ticket => {
-      if (ticket.gameType === "big" || ticket.gameType === "small") {
-        if (ticket.betType === "big") return bigCount >= 13;
-        if (ticket.betType === "small") return smallCount >= 13;
-      } else if (ticket.gameType === "oddeven") {
+      if (ticket.gameType === "big") return bigCount >= 13;
+      if (ticket.gameType === "small") return smallCount >= 13;
+      if (ticket.gameType === "oddeven") {
         if (ticket.betType === "odd") return oddCount >= 13;
         if (ticket.betType === "even") return evenCount >= 13;
       }
+      if (ticket.gameType === "base") return true; // 基礎投注總是中獎
       return false;
     });
 
@@ -281,23 +282,23 @@ export default function SimulateTab() {
                         handleRandomNumbers(star);
                       }
                     }}
-                    style={selectedStar === star ? { boxShadow: "0 0 12px rgba(250, 204, 21, 0.8)" } : { boxShadow: "0 0 8px rgba(250, 204, 21, 0.3)" }}
                     className={cn(
-                      "text-xs sm:text-sm px-1 sm:px-2 py-1 sm:py-1.5 rounded-lg border-2 text-center transition-all font-bold",
+                      "text-xs px-0.5 py-1 rounded border text-center transition-all",
                       selectedStar === star
-                        ? "bg-yellow-900/40 text-yellow-400 border-yellow-500"
-                        : "bg-black/40 text-gray-300 border-gray-700 hover:border-yellow-500"
+                        ? "border-yellow-500 text-yellow-400 shadow-lg"
+                        : "border-gray-600 text-gray-300 hover:border-yellow-400"
                     )}
+                    style={selectedStar === star ? { boxShadow: "0 0 8px rgba(255, 215, 0, 0.8)" } : { boxShadow: "0 0 4px rgba(255, 215, 0, 0.3)" }}
                   >
-                    <div className="font-bold text-xs sm:text-sm">{star}星</div>
-                    <div className="text-xs text-gray-400 truncate leading-tight">NT${formatNumber(STAR_PRIZES[star]).slice(0, 6)}</div>
+                    <div className="font-bold">{star}星</div>
+                    <div className="text-xs leading-tight truncate">NT${formatNumber(STAR_PRIZES[star])}</div>
                   </button>
                 ))}
               </div>
-              
+
               {selectedStar && (
-                <p className="text-xs text-gray-400 text-center">
-                  選 {selectedStar} 個號碼 · 全中獎金 NT${formatNumber(STAR_PRIZES[selectedStar])}
+                <p className="text-xs text-orange-400 text-center">
+                  選 {selectedNumbers.length} 個號碼 · 全中獎金 NT${formatNumber(STAR_PRIZES[selectedStar])}
                 </p>
               )}
 
@@ -329,8 +330,6 @@ export default function SimulateTab() {
               </div>
             </CardContent>
           </Card>
-
-
 
           {/* 猜大小 */}
           <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
@@ -480,14 +479,14 @@ export default function SimulateTab() {
                   <p className="text-orange-400">
                     選擇投注：{betStar}星 × NT${BASE_BET} = NT${formatNumber(BASE_BET * betStar)}/組
                   </p>
-                  {bigSmallMultiplier && periods && (
+                  {selectedBigSmall.length > 0 && (
                     <p className="text-orange-400">
-                      大小投注：NT${formatNumber(BASE_BET * betStar)} × {bigSmallMultiplier} × {periods} = NT${formatNumber(calculateBetAmount(betStar, bigSmallMultiplier, periods))}/組
+                      大小投注：NT${formatNumber(BASE_BET * betStar)} × {bigSmallMultiplier || 1} × {periods || 1} = NT${formatNumber(calculateBetAmount(betStar, bigSmallMultiplier, periods || 1))}/組
                     </p>
                   )}
-                  {oddEvenMultiplier && periods && (
+                  {selectedOddEven.length > 0 && (
                     <p className="text-orange-400">
-                      單雙投注：NT${formatNumber(BASE_BET * betStar)} × {oddEvenMultiplier} × {periods} = NT${formatNumber(calculateBetAmount(betStar, oddEvenMultiplier, periods))}/組
+                      單雙投注：NT${formatNumber(BASE_BET * betStar)} × {oddEvenMultiplier || 1} × {periods || 1} = NT${formatNumber(calculateBetAmount(betStar, oddEvenMultiplier, periods || 1))}/組
                     </p>
                   )}
                   {calculateEstimatedWinnings() > 0 && (
@@ -523,7 +522,10 @@ export default function SimulateTab() {
                 {tickets.map(ticket => (
                   <div key={ticket.id} className="flex justify-between items-center text-xs bg-black/20 p-1 rounded">
                     <span className="text-gray-300">
-                      {ticket.star}星 {ticket.betType === "big" ? "大" : ticket.betType === "small" ? "小" : ticket.betType === "odd" ? "單" : "雙"} ×{ticket.multiplier} {ticket.periods}期 = NT${formatNumber(ticket.totalBet)}
+                      {ticket.gameType === "base" ? "基礎" : ticket.gameType === "big" ? "大" : ticket.gameType === "small" ? "小" : ticket.betType === "odd" ? "單" : "雙"}
+                      {ticket.multiplier && ` ×${ticket.multiplier}`}
+                      {ticket.periods && ` ${ticket.periods}期`}
+                      {" - "}NT${formatNumber(ticket.totalBet)}
                     </span>
                     <button
                       onClick={() => handleDeleteBet(ticket.id)}
