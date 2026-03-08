@@ -226,7 +226,6 @@ export default function SimulateTab() {
       () => Math.floor(Math.random() * 80) + 1
     );
     setSelectedNumbers(randomNumbers);
-    setBetStar(starCount);
   };
 
   const totalBetAmount = tickets.reduce((sum, ticket) => sum + ticket.totalBet, 0);
@@ -298,12 +297,13 @@ export default function SimulateTab() {
                 ))}
               </div>
 
-              {(selectedStar || betStar) && (
-                <p className="text-xs text-orange-400 text-center mt-1">
-                  {selectedStar && `Selected ${selectedNumbers.length} numbers - Prize: NT$${formatNumber(hasNewYearBonus ? STAR_PRIZES_BONUS[selectedStar] : STAR_PRIZES[selectedStar])}`}
-                  {betStar && ` | Bet Star: ${betStar}`}
-                </p>
-              )}
+              <div>
+                {betStar && (
+                  <p className="text-xs text-orange-400 text-center mt-1">
+                    已選擇 {selectedNumbers.length} 個號碼 - 獎金: NT${formatNumber(hasNewYearBonus ? STAR_PRIZES_BONUS[betStar] : STAR_PRIZES[betStar])} | 投注星級: {betStar}
+                  </p>
+                )}
+              </div>
 
               {/* Number selection */}
               <div className="space-y-0.5">
@@ -455,9 +455,9 @@ export default function SimulateTab() {
               {/* Bet amount display */}
               {(selectedBigSmall.length > 0 || selectedOddEven.length > 0 || betStar) && (
                 <div className="bg-black/20 border border-orange-500/30 rounded p-1 text-xs text-orange-400">
-                  <div>Base: NT${formatNumber(BASE_BET)} x {bigSmallMultiplier || oddEvenMultiplier || 1} x {periods || 1} = NT${formatNumber(calculateBetAmount(bigSmallMultiplier || oddEvenMultiplier, periods))}</div>
+                  <div>基礎: NT${formatNumber(BASE_BET)} x {bigSmallMultiplier || oddEvenMultiplier || 1} x {periods || 1} = NT${formatNumber(calculateBetAmount(bigSmallMultiplier || oddEvenMultiplier, periods))}</div>
                   {calculateEstimatedWinnings() > 0 && (
-                    <div className="text-yellow-400">Estimated winnings: NT${formatNumber(calculateEstimatedWinnings())}</div>
+                    <div className="text-yellow-400">預期獎金: NT${formatNumber(calculateEstimatedWinnings())}</div>
                   )}
                 </div>
               )}
@@ -517,9 +517,9 @@ export default function SimulateTab() {
               </CardHeader>
               <CardContent className="py-0.5 space-y-1">
                 {tickets.map(ticket => {
-                  const gameTypeLabel = ticket.gameType === 'base' ? 'Base' : ticket.gameType === 'big' ? 'Big' : ticket.gameType === 'small' ? 'Small' : ticket.betType === 'odd' ? 'Odd' : 'Even';
-                  const numbersDisplay = ticket.selectedNumbers && ticket.selectedNumbers.length > 0 ? ticket.selectedNumbers.join(', ') : 'None';
-                  const winStatus = ticket.isWinning ? 'Win NT$' + formatNumber(ticket.winningAmount || 0) : 'Lose';
+                  const gameTypeLabel = ticket.gameType === 'base' ? '基礎' : ticket.gameType === 'big' ? '大' : ticket.gameType === 'small' ? '小' : ticket.betType === 'odd' ? '單' : '雙';
+                  const numbersDisplay = ticket.selectedNumbers && ticket.selectedNumbers.length > 0 ? ticket.selectedNumbers.join(', ') : '無';
+                  const winStatus = ticket.isWinning ? '中獎 NT$' + formatNumber(ticket.winningAmount || 0) : '未中';
                   
                   return (
                     <div key={ticket.id} className="text-xs text-green-400 border border-green-500/30 rounded p-1">
