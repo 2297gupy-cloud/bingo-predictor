@@ -110,7 +110,7 @@ function NumberDistributionBlock({
           </div>
         ) : (
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
-            <table className="border-collapse" style={{ minWidth: `${80 * 14 + 44}px`, borderCollapse: 'collapse' }}>
+            <table className="border-collapse" style={{ minWidth: `${80 * 13 + 20}px`, borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th className="sticky left-0 z-10 bg-card text-[6px] text-muted-foreground/60 font-normal px-0 py-0.5 text-right border-r border-white/20 min-w-[20px]">時</th>
