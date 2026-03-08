@@ -755,11 +755,14 @@ export default function AiStrategyTab() {
       </Card>
 
       {/* Number Distribution Block */}
-      <NumberDistributionBlock
-        dateStr={dateStr}
-        targetHour={effectiveVerifySlot}
-        goldenBalls={verifyPrediction?.goldenBalls}
-      />
+      {/* 即時數字分布應該跟隨各時段總覽的選擇，而不是驗證時段的選擇 */}
+      {currentSlotInfo && (
+        <NumberDistributionBlock
+          dateStr={dateStr}
+          targetHour={currentSlotInfo.target}
+          goldenBalls={verifyPrediction?.goldenBalls}
+        />
+      )}
 
       {/* Verification Section */}
       <Card className="neon-border bg-card">
