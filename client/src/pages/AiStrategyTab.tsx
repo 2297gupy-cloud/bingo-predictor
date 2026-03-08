@@ -650,11 +650,28 @@ export default function AiStrategyTab() {
           {currentPrediction ? (
             <div className="space-y-1.5">
               <div className="flex justify-center">
-                <div className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border border-amber-500/20">
+                <button
+                  onClick={() => {
+                    const ballCount = currentPrediction.goldenBalls.length;
+                    if (ballCount >= 3) {
+                      const effects: Record<number, { label: string; color: string }> = {
+                        3: { label: '【三星入袋】⭐', color: 'text-amber-400' },
+                        4: { label: '【四星報喜】🌟', color: 'text-blue-400' },
+                        5: { label: '【五星滿貫】🏆', color: 'text-yellow-400' },
+                        6: { label: '【六星封神】👑', color: 'text-purple-400' }
+                      };
+                      const effect = effects[ballCount];
+                      if (effect) {
+                        console.log(`特效: ${effect.label}`);
+                      }
+                    }
+                  }}
+                  className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border border-amber-500/20 hover:border-amber-500/50 transition-all cursor-pointer animate-pulse hover:animate-none"
+                >
                   {currentPrediction.goldenBalls.map((num: number, idx: number) => (
                     <GoldenBall key={idx} number={num} size="lg" />
                   ))}
-                </div>
+                </button>
               </div>
               {currentPrediction.reasoning && (
                 <p className="text-[10px] text-muted-foreground/70 text-center px-2">
@@ -667,6 +684,11 @@ export default function AiStrategyTab() {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 py-3">
+              <div className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border border-amber-500/20 border-dashed animate-pulse">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-secondary/50 flex items-center justify-center text-[10px] text-muted-foreground">?</div>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-secondary/50 flex items-center justify-center text-[10px] text-muted-foreground">?</div>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-secondary/50 flex items-center justify-center text-[10px] text-muted-foreground">?</div>
+              </div>
               <p className="text-[10px] text-muted-foreground">
                 尚未分析此時段，點擊「AI分析」或在下方手動輸入
               </p>
