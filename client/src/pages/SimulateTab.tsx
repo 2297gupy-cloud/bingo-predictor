@@ -104,7 +104,7 @@ export default function SimulateTab() {
     }
 
     const newTickets: BetTicket[] = [];
-    let ticketId = tickets.length + 1;
+    let ticketId = tickets.length > 0 ? Math.max(...tickets.map(t => t.id)) + 1 : 1;
 
     // 添加大小投注
     selectedBigSmall.forEach(type => {
@@ -115,7 +115,7 @@ export default function SimulateTab() {
         betType: type,
         multiplier: bigSmallMultiplier,
         periods: periods || 1,
-        totalBet: calculateBetAmount(betStar, bigSmallMultiplier, periods || 1),
+        totalBet: calculateBetAmount(betStar, bigSmallMultiplier, periods),
       });
     });
 
@@ -128,7 +128,7 @@ export default function SimulateTab() {
         betType: type,
         multiplier: oddEvenMultiplier,
         periods: periods || 1,
-        totalBet: calculateBetAmount(betStar, oddEvenMultiplier, periods || 1),
+        totalBet: calculateBetAmount(betStar, oddEvenMultiplier, periods),
       });
     });
 
@@ -146,7 +146,7 @@ export default function SimulateTab() {
     }
 
     if (newTickets.length > 0) {
-      setTickets([...newTickets, ...tickets]);
+      setTickets([...tickets, ...newTickets]);
       // 清除投注選擇
       setBetStar(null);
       setSelectedBigSmall([]);
@@ -159,6 +159,11 @@ export default function SimulateTab() {
 
   // 模擬開獎
   const handleSimulateDraw = () => {
+    if (tickets.length === 0) {
+      alert("請先加入投注");
+      return;
+    }
+
     const drawNumbers = Array.from({ length: 20 }, () => Math.floor(Math.random() * 80) + 1);
     const bigCount = drawNumbers.filter(n => n >= 41).length;
     const smallCount = drawNumbers.filter(n => n <= 40).length;
@@ -327,6 +332,33 @@ export default function SimulateTab() {
                     </button>
                   ))}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 投注星級選擇 */}
+          <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
+            <CardHeader className="py-1">
+              <CardTitle className="text-xs">💵 選擇投注星級</CardTitle>
+              <p className="text-xs text-gray-400 mt-0.5">基本投注：NT$25/顆星</p>
+            </CardHeader>
+            <CardContent className="py-0.5">
+              <div className="grid grid-cols-5 gap-1">
+                {STARS.map(star => (
+                  <button
+                    key={star}
+                    onClick={() => setBetStar(betStar === star ? null : star)}
+                    className={cn(
+                      "text-xs px-0.5 py-1 rounded border text-center transition-all",
+                      betStar === star
+                        ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
+                        : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
+                    )}
+                  >
+                    <div className="font-bold">{star}星</div>
+                    <div className="text-xs">NT${formatNumber(BASE_BET * star)}</div>
+                  </button>
+                ))}
               </div>
             </CardContent>
           </Card>
