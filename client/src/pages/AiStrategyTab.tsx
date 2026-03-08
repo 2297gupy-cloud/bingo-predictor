@@ -531,25 +531,36 @@ export default function AiStrategyTab() {
               {predictions?.length || 0} 個已分析
             </span>
             {predictions && predictions.length > 0 && (
-              <button
-                onClick={async () => {
-                  if (!window.confirm(`確定清除 ${dateStr} 所有時段的球號？`)) return;
-                  try {
-                    await Promise.all(
-                      predictions.map(pred =>
-                        aiDeletePrediction.mutateAsync({ date: dateStr, sourceHour: pred.sourceHour })
-                      )
-                    );
-                    toast.success(`已清除所有時段球號`);
-                  } catch (err: any) {
-                    toast.error(`清除失敗：${err.message}`);
-                  }
-                }}
-                className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 transition-colors shrink-0"
-              >
-                <Trash2 className="h-3 w-3" />
-                <span>清除全部</span>
-              </button>
+              <div className="ml-auto flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    window.open('https://gemini.google.com/app/a35bb8c4886f6949', '_blank');
+                  }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 transition-colors shrink-0"
+                >
+                  <Brain className="h-3 w-3" />
+                  <span>AI手動計算</span>
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!window.confirm(`確定清除 ${dateStr} 所有時段的球號？`)) return;
+                    try {
+                      await Promise.all(
+                        predictions.map(pred =>
+                          aiDeletePrediction.mutateAsync({ date: dateStr, sourceHour: pred.sourceHour })
+                        )
+                      );
+                      toast.success(`已清除所有時段球號`);
+                    } catch (err: any) {
+                      toast.error(`清除失敗：${err.message}`);
+                    }
+                  }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 transition-colors shrink-0"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  <span>清除全部</span>
+                </button>
+              </div>
             )}
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-1">
