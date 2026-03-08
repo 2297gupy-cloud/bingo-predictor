@@ -169,6 +169,24 @@ function VerifyRow({ item }: { item: { term: string; index: number; time: string
       </div>
     );
   }
+  
+  // 計算單期特效
+  const getSpecialEffect = () => {
+    if (!item.isHit || item.hits.length < 3) return null;
+    
+    const hitCount = item.hits.length;
+    if (hitCount >= 6) {
+      return <span className="text-purple-400 font-bold text-[9px] ml-1">【六星封神】👑</span>;
+    } else if (hitCount >= 5) {
+      return <span className="text-yellow-400 font-bold text-[9px] ml-1">【五星滿貫】🏆</span>;
+    } else if (hitCount >= 4) {
+      return <span className="text-blue-400 font-bold text-[9px] ml-1">【四星報喜】🌟</span>;
+    } else if (hitCount >= 3) {
+      return <span className="text-amber-400 font-bold text-[9px] ml-1">【三星入袋】⭐</span>;
+    }
+    return null;
+  };
+  
   return (
     <div className={cn(
       "flex items-center gap-1.5 px-2 py-0.5 rounded text-xs border",
@@ -192,6 +210,7 @@ function VerifyRow({ item }: { item: { term: string; index: number; time: string
               </span>
             ))}
             <CheckCircle2 className="h-3 w-3 text-green-400 shrink-0" />
+            {getSpecialEffect()}
           </>
         ) : (
           <span className="text-muted-foreground/50 text-[9px]">未中獎</span>
@@ -796,26 +815,13 @@ export default function AiStrategyTab() {
                   <VerifyRow key={item.term || `pending-${idx}`} item={item} />
                 ))}
               </div>
-              <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px] flex-wrap">
+              <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px]">
                 <span className="text-green-400">
                   命中率：{Math.round((verifyPrediction.verification.filter((v: any) => v.isHit).length / 12) * 100)}%
                 </span>
                 <span className="text-muted-foreground">
                   總命中球數：{verifyPrediction.verification.reduce((sum: number, v: any) => sum + v.hits.length, 0)}
                 </span>
-                {(() => {
-                  const totalHits = verifyPrediction.verification.reduce((sum: number, v: any) => sum + v.hits.length, 0);
-                  if (totalHits >= 6) {
-                    return <span className="text-purple-400 font-bold">【六星封神】👑</span>;
-                  } else if (totalHits >= 5) {
-                    return <span className="text-yellow-400 font-bold">【五星滿貫】🏆</span>;
-                  } else if (totalHits >= 4) {
-                    return <span className="text-blue-400 font-bold">【四星報喜】🌟</span>;
-                  } else if (totalHits >= 3) {
-                    return <span className="text-amber-400 font-bold">【三星入袋】⭐</span>;
-                  }
-                  return null;
-                })()}
               </div>
             </>
           ) : (
