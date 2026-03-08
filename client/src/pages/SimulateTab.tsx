@@ -289,7 +289,7 @@ export default function SimulateTab() {
                     )}
                   >
                     <div className="font-bold">{star}星</div>
-                    <div className="text-xs leading-tight truncate">NT${formatNumber(BASE_BET * star)}</div>
+                    <div className="text-xs leading-tight truncate">NT${formatNumber(BASE_BET)}</div>
                   </button>
                 ))}
               </div>
