@@ -77,7 +77,7 @@ function NumberDistributionBlock({
     <Card className="neon-border bg-card">
       <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
         <div className="flex items-center gap-1.5 mb-2">
-          <span className="text-xs font-medium text-foreground">數字分布</span>
+          <span className="text-xs font-medium text-foreground">即時數字分布</span>
           <span className="text-[10px] text-muted-foreground">{hourPad}時 近15期</span>
           <div className="ml-auto flex items-center gap-2 text-[9px]">
             <span className="flex items-center gap-0.5">
@@ -564,7 +564,11 @@ export default function AiStrategyTab() {
                   prediction={pred}
                   isCurrent={isCurrent}
                   isSelected={isSelected}
-                  onSelect={() => setSelectedSlot(slot.source)}
+                  onSelect={() => {
+                    setSelectedSlot(slot.source);
+                    // 同時更新 verifySlot 為該時段的目標時段，確保數字分布不消失
+                    setVerifySlot(slot.target);
+                  }}
                   onDelete={pred ? async () => {
                     try {
                       await aiDeletePrediction.mutateAsync({ date: dateStr, sourceHour: slot.source });

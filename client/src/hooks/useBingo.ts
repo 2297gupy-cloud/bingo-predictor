@@ -87,7 +87,11 @@ export function useAiHourSlots() {
 export function useAiHourDraws(date: string, hour: string) {
   return trpc.bingo.aiHourDraws.useQuery(
     { date, hour },
-    { staleTime: 30_000, enabled: !!date && !!hour }
+    {
+      staleTime: 0,  // 立即標記為過期，確保持續更新
+      refetchInterval: 30_000,  // 每 30 秒自動重新獲取
+      enabled: !!date && !!hour
+    }
   );
 }
 
