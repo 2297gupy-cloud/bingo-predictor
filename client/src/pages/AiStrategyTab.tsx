@@ -189,7 +189,7 @@ function VerifyRow({ item }: { item: { term: string; index: number; time: string
   
   return (
     <div className={cn(
-      "flex items-center gap-1.5 px-2 py-0.5 rounded text-xs border",
+      "flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs border overflow-x-auto scrollbar-none",
       item.isHit
         ? "border-green-500/30 bg-green-500/5"
         : "border-border/20 bg-transparent"
@@ -201,11 +201,11 @@ function VerifyRow({ item }: { item: { term: string; index: number; time: string
       {/* 期數 */}
       <span className="font-mono-num text-muted-foreground/40 text-[9px] shrink-0">{item.term}</span>
       {/* 命中結果 */}
-      <div className="flex-1 flex items-center gap-1 min-w-0">
+      <div className="flex items-center gap-0.5 min-w-0">
         {item.isHit ? (
           <>
             {item.hits.map(n => (
-              <span key={n} className="font-mono-num font-bold text-amber-400 text-[10px]">
+              <span key={n} className="font-mono-num font-bold text-amber-400 text-[10px] shrink-0">
                 {item.hits.length > 1 ? `*${String(n).padStart(2, "0")}` : String(n).padStart(2, "0")}
               </span>
             ))}
