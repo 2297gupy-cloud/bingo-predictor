@@ -760,7 +760,7 @@ export default function AiStrategyTab() {
         <NumberDistributionBlock
           dateStr={dateStr}
           targetHour={currentSlot.source}
-          goldenBalls={undefined}
+          goldenBalls={parsedBalls.length > 0 ? parsedBalls : undefined}
         />
       )}
 
