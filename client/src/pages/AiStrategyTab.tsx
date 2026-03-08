@@ -796,13 +796,26 @@ export default function AiStrategyTab() {
                   <VerifyRow key={item.term || `pending-${idx}`} item={item} />
                 ))}
               </div>
-              <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px]">
+              <div className="mt-1.5 pt-1.5 border-t border-border/20 flex items-center justify-center gap-3 text-[10px] flex-wrap">
                 <span className="text-green-400">
                   命中率：{Math.round((verifyPrediction.verification.filter((v: any) => v.isHit).length / 12) * 100)}%
                 </span>
                 <span className="text-muted-foreground">
                   總命中球數：{verifyPrediction.verification.reduce((sum: number, v: any) => sum + v.hits.length, 0)}
                 </span>
+                {(() => {
+                  const totalHits = verifyPrediction.verification.reduce((sum: number, v: any) => sum + v.hits.length, 0);
+                  if (totalHits >= 6) {
+                    return <span className="text-purple-400 font-bold">【六星封神】👑</span>;
+                  } else if (totalHits >= 5) {
+                    return <span className="text-yellow-400 font-bold">【五星滿貫】🏆</span>;
+                  } else if (totalHits >= 4) {
+                    return <span className="text-blue-400 font-bold">【四星報喜】🌟</span>;
+                  } else if (totalHits >= 3) {
+                    return <span className="text-amber-400 font-bold">【三星入袋】⭐</span>;
+                  }
+                  return null;
+                })()}
               </div>
             </>
           ) : (
