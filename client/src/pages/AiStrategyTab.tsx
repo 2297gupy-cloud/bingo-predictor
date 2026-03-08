@@ -131,14 +131,14 @@ function NumberDistributionBlock({
                               <div
                                 className={cn(
                                   "mx-auto my-0.5",
-                                  "w-[10px] h-[10px]",
+                                  "w-2 h-2",
                                   isGolden
                                     ? "bg-emerald-400 ring-1 ring-emerald-300 shadow-[0_0_4px_rgba(52,211,153,0.8)]"
                                     : "bg-emerald-600/70"
                                 )}
                               />
                             ) : (
-                              <div className="mx-auto my-0.5 w-[10px] h-[10px]" />
+                              <div className="mx-auto my-0.5 w-2 h-2" />
                             )}
                           </td>
                         );

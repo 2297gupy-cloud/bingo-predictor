@@ -115,9 +115,33 @@ export async function getHourDraws(dateStr: string, hour: string) {
         pending: false,
       });
     } else {
+      // For pending draws, generate the expected time based on the last draw's time
+      // Each draw is 5 minutes apart
+      let expectedTime = "";
+      if (lastHourDraw.length > 0) {
+        const lastTime = lastHourDraw[0].drawTime;
+        const [lastHour, lastMinute] = lastTime.split(":").map(Number);
+        const termDiff = (startTerm + i) - lastTerm;
+        // Calculate total minutes from the last draw
+        let totalMinutes = lastMinute + termDiff * 5;
+        let newHour = lastHour;
+        let newMinute = totalMinutes;
+        
+        // Handle hour overflow
+        while (newMinute >= 60) {
+          newMinute -= 60;
+          newHour += 1;
+        }
+        while (newMinute < 0) {
+          newMinute += 60;
+          newHour -= 1;
+        }
+        
+        expectedTime = `${String(newHour).padStart(2, "0")}:${String(newMinute).padStart(2, "0")}`;
+      }
       result.push({
         term: term,
-        time: "",
+        time: expectedTime,
         numbers: [],
         pending: true,
       });
