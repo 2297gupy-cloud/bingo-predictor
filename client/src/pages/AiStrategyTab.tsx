@@ -294,7 +294,7 @@ function SlotCard({
       onClick={onSelect}
       {...longPress.handlers}
       className={cn(
-        "relative cursor-pointer rounded border p-1 sm:p-1.5 transition-all select-none",
+        "relative cursor-pointer rounded border p-0.5 sm:p-1 transition-all select-none",
         isSelected
           ? "border-amber-400/60 bg-amber-400/10 ring-1 ring-amber-400/30"
           : prediction
@@ -307,7 +307,7 @@ function SlotCard({
           style={{ width: `${longPress.progress * 100}%` }}
         />
       )}
-      <div className="flex items-center justify-between mb-0.5">
+      <div className="flex items-center justify-between mb-0.25">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3 text-muted-foreground" />
           <span className="font-mono-num text-[10px] font-medium text-foreground">
@@ -359,7 +359,7 @@ function SlotCard({
           <span className="text-[10px] text-muted-foreground/40">尚未分析</span>
         </div>
       )}
-      <p className="text-[7px] text-muted-foreground/25 text-center mt-0">長押複製</p>
+      <p className="text-[6px] text-muted-foreground/20 text-center mt-0.5">長押複製</p>
     </div>
   );
 }
