@@ -596,8 +596,11 @@ export default function AiStrategyTab() {
                   isSelected={isSelected}
                   onSelect={() => {
                     setSelectedSlot(slot.source);
-                    // 同時更新 verifySlot 為該時段的目標時段，確保數字分布不消失
-                    setVerifySlot(slot.target);
+                    // 只在有有效目標時段時才更新 verifySlot，否則保持當前的 verifySlot 不變
+                    // 這樣可以防止點擊未開獎時段時，即時數字分布消失
+                    if (slot.target) {
+                      setVerifySlot(slot.target);
+                    }
                   }}
                   onDelete={pred ? async () => {
                     try {
