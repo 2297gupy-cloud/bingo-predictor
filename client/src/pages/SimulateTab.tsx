@@ -263,15 +263,16 @@ export default function SimulateTab() {
                         handleRandomNumbers(star);
                       }
                     }}
+                    style={selectedStar === star ? { boxShadow: "0 0 12px rgba(250, 204, 21, 0.8)" } : { boxShadow: "0 0 8px rgba(250, 204, 21, 0.3)" }}
                     className={cn(
-                      "text-xs px-2 py-1.5 rounded-lg border-2 text-center transition-all font-bold",
+                      "text-xs sm:text-sm px-1 sm:px-2 py-1 sm:py-1.5 rounded-lg border-2 text-center transition-all font-bold",
                       selectedStar === star
-                        ? "bg-yellow-900/40 text-yellow-400 border-yellow-500 shadow-lg"
+                        ? "bg-yellow-900/40 text-yellow-400 border-yellow-500"
                         : "bg-black/40 text-gray-300 border-gray-700 hover:border-yellow-500"
                     )}
                   >
-                    <div className="font-bold text-sm">{star}星</div>
-                    <div className="text-xs text-gray-400">NT${formatNumber(STAR_PRIZES[star])}</div>
+                    <div className="font-bold text-xs sm:text-sm">{star}星</div>
+                    <div className="text-xs text-gray-400 truncate">NT${formatNumber(STAR_PRIZES[star])}</div>
                   </button>
                 ))}
               </div>
