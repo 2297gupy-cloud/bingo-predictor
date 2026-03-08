@@ -635,7 +635,7 @@ export default function AiStrategyTab() {
               size="sm"
               onClick={() => handleAiAnalyze(effectiveSlot)}
               disabled={aiAnalyze.isPending}
-              className="h-5 gap-0.5 border-amber-500/30 text-[10px] px-1.5 hover:bg-amber-500/10"
+              className="h-5 gap-0.5 border-amber-500/30 text-[10px] px-1.5 hover:bg-amber-500/10 animate-pulse hover:animate-none"
             >
               {aiAnalyze.isPending ? (
                 <Loader2 className="h-2.5 w-2.5 animate-spin" />
