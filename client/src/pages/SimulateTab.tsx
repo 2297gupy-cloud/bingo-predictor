@@ -78,8 +78,7 @@ export default function SimulateTab() {
 
   // 計算投注金額
   const calculateBetAmount = (star: number, multiplier: number | null, periods: number | null) => {
-    if (multiplier === null || periods === null) return BASE_BET * star * (periods || 1);
-    return BASE_BET * star * multiplier * periods;
+    return BASE_BET * star * (multiplier || 1) * (periods || 1);
   };
 
   // 計算預估獎金
@@ -207,6 +206,8 @@ export default function SimulateTab() {
       () => Math.floor(Math.random() * 80) + 1
     );
     setSelectedNumbers(randomNumbers);
+    // 同時設置投注星級
+    setBetStar(starCount);
   };
 
   const totalBetAmount = tickets.reduce((sum, ticket) => sum + ticket.totalBet, 0);
@@ -270,10 +271,11 @@ export default function SimulateTab() {
             </CardContent>
           </Card>
 
-          {/* 星級選號 */}
+          {/* 星級選擇與投注 - 整合區塊 */}
           <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
             <CardHeader className="py-1">
               <CardTitle className="text-xs">⭐ 選擇星級玩法</CardTitle>
+              <p className="text-xs text-gray-400 mt-0.5">基本投注：NT$25/顆星 | 點擊星級可選擇投注並自動選號</p>
             </CardHeader>
             <CardContent className="py-0.5 space-y-1">
               {/* 星級選擇 - 2行5列 */}
@@ -282,28 +284,30 @@ export default function SimulateTab() {
                   <button
                     key={star}
                     onClick={() => {
+                      // 同時更新選號和投注星級
                       setSelectedStar(selectedStar === star ? null : star);
+                      setBetStar(betStar === star ? null : star);
                       if (selectedStar !== star) {
                         handleRandomNumbers(star);
                       }
                     }}
                     className={cn(
                       "text-xs px-0.5 py-1 rounded border text-center transition-all",
-                      selectedStar === star
-                        ? "border-yellow-500 text-yellow-400 shadow-lg"
-                        : "border-gray-600 text-gray-300 hover:border-yellow-400"
+                      (selectedStar === star || betStar === star)
+                        ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
+                        : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
                     )}
-                    style={selectedStar === star ? { boxShadow: "0 0 8px rgba(255, 215, 0, 0.8)" } : { boxShadow: "0 0 4px rgba(255, 215, 0, 0.3)" }}
                   >
                     <div className="font-bold">{star}星</div>
-                    <div className="text-xs leading-tight truncate">NT${formatNumber(STAR_PRIZES[star])}</div>
+                    <div className="text-xs leading-tight truncate">NT${formatNumber(BASE_BET * star)}</div>
                   </button>
                 ))}
               </div>
 
-              {selectedStar && (
+              {(selectedStar || betStar) && (
                 <p className="text-xs text-orange-400 text-center">
-                  選 {selectedNumbers.length} 個號碼 · 全中獎金 NT${formatNumber(STAR_PRIZES[selectedStar])}
+                  {selectedStar && `選 ${selectedNumbers.length} 個號碼 · 全中獎金 NT$${formatNumber(STAR_PRIZES[selectedStar])}`}
+                  {betStar && ` | 投注星級：${betStar}星`}
                 </p>
               )}
 
@@ -332,33 +336,6 @@ export default function SimulateTab() {
                     </button>
                   ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 投注星級選擇 */}
-          <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-            <CardHeader className="py-1">
-              <CardTitle className="text-xs">💵 選擇投注星級</CardTitle>
-              <p className="text-xs text-gray-400 mt-0.5">基本投注：NT$25/顆星</p>
-            </CardHeader>
-            <CardContent className="py-0.5">
-              <div className="grid grid-cols-5 gap-1">
-                {STARS.map(star => (
-                  <button
-                    key={star}
-                    onClick={() => setBetStar(betStar === star ? null : star)}
-                    className={cn(
-                      "text-xs px-0.5 py-1 rounded border text-center transition-all",
-                      betStar === star
-                        ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
-                        : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
-                    )}
-                  >
-                    <div className="font-bold">{star}星</div>
-                    <div className="text-xs">NT${formatNumber(BASE_BET * star)}</div>
-                  </button>
-                ))}
               </div>
             </CardContent>
           </Card>
