@@ -7,22 +7,27 @@ import { cn } from "@/lib/utils";
 
 interface BetTicket {
   id: number;
-  gameType: "big" | "small" | "select" | "oddeven";
+  gameType: "big" | "small" | "select" | "oddeven" | "superball";
   selectedNumbers: number[];
   oddEvenType?: "odd" | "even";
   multiplier: number;
   periods: number;
   groups: number;
   totalBet: number;
+  hasSuperBall?: boolean;
 }
 
 interface DrawResult {
   period: number;
   drawNumbers: number[];
+  superBall?: number;
   winningTickets: BetTicket[];
 }
 
-const MULTIPLIERS = [1, 2, 5, 10, 50];
+// 新投注倍數：2x, 3x, 4x, 5x, 6x, 8x, 10x, 12x, 20x, 50x
+const MULTIPLIERS = [2, 3, 4, 5, 6, 8, 10, 12, 20, 50];
+// 新投注期數：2, 3, 4, 5, 6, 7, 8, 9, 10, 12
+const PERIODS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
 const NUMBERS = Array.from({ length: 80 }, (_, i) => i + 1);
 
 // 獎金表 (標準獎金)
@@ -39,6 +44,13 @@ const PRIZE_TABLE: Record<number, number> = {
   10: 5000000,
 };
 
+// 超級獎獎金
+const SUPER_BALL_PRIZE = 1200;
+// 大小獎金
+const BIG_SMALL_PRIZE = 150;
+// 單雙獎金
+const ODD_EVEN_PRIZE = 150;
+
 // 過年加碼倍數 (例如: 1.5倍)
 const NEW_YEAR_BONUS_MULTIPLIER = 1.5;
 
@@ -54,16 +66,18 @@ function generateRandomNumbers(count: number, max: number = 80): number[] {
 }
 
 export default function SimulateTab() {
-  const [gameType, setGameType] = useState<"big" | "small" | "select" | "oddeven">("select");
+  const [gameType, setGameType] = useState<"big" | "small" | "select" | "oddeven" | "superball">("select");
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [oddEvenType, setOddEvenType] = useState<"odd" | "even">("odd");
-  const [multiplier, setMultiplier] = useState(1);
-  const [periods, setPeriods] = useState(1);
+  const [multiplier, setMultiplier] = useState(2);
+  const [periods, setPeriods] = useState(2);
   const [groups, setGroups] = useState(1);
   const [tickets, setTickets] = useState<BetTicket[]>([]);
   const [results, setResults] = useState<DrawResult[]>([]);
   const [activeTab, setActiveTab] = useState("bet");
   const [hasNewYearBonus, setHasNewYearBonus] = useState(false);
+  const [hasSuperBall, setHasSuperBall] = useState(false);
+  const [inputNumber, setInputNumber] = useState("");
 
   const toggleNumber = useCallback((num: number) => {
     setSelectedNumbers(prev => {
@@ -71,6 +85,23 @@ export default function SimulateTab() {
       if (prev.length >= 6) return prev;
       return [...prev, num].sort((a, b) => a - b);
     });
+  }, []);
+
+  const handleInputNumber = useCallback(() => {
+    const num = parseInt(inputNumber);
+    if (num >= 1 && num <= 80) {
+      toggleNumber(num);
+      setInputNumber("");
+    }
+  }, [inputNumber, toggleNumber]);
+
+  const handleRandomNumbers = useCallback(() => {
+    const random = generateRandomNumbers(6);
+    setSelectedNumbers(random);
+  }, []);
+
+  const handleClearNumbers = useCallback(() => {
+    setSelectedNumbers([]);
   }, []);
 
   const handleAddBet = useCallback(() => {
@@ -86,11 +117,12 @@ export default function SimulateTab() {
       periods,
       groups,
       totalBet: multiplier * periods * groups * 50,
+      hasSuperBall: gameType === "superball" ? true : hasSuperBall,
     };
 
     setTickets(prev => [...prev, newTicket]);
     setSelectedNumbers([]);
-  }, [gameType, selectedNumbers, oddEvenType, multiplier, periods, groups, tickets.length]);
+  }, [gameType, selectedNumbers, oddEvenType, multiplier, periods, groups, tickets.length, hasSuperBall]);
 
   const handleSimulate = useCallback(() => {
     if (tickets.length === 0) return;
@@ -98,10 +130,20 @@ export default function SimulateTab() {
     const newResults: DrawResult[] = [];
     for (let p = 0; p < periods; p++) {
       const drawNumbers = generateRandomNumbers(20);
+      const superBall = Math.floor(Math.random() * 80) + 1;
+
       const winningTickets = tickets.filter(ticket => {
         if (ticket.gameType === "select") {
           const matched = ticket.selectedNumbers.filter(n => drawNumbers.includes(n));
           return matched.length >= 3;
+        }
+        if (ticket.gameType === "big") {
+          const bigCount = drawNumbers.filter(n => n > 40).length;
+          return bigCount >= 10;
+        }
+        if (ticket.gameType === "small") {
+          const smallCount = drawNumbers.filter(n => n <= 40).length;
+          return smallCount >= 10;
         }
         if (ticket.gameType === "oddeven") {
           const count = drawNumbers.filter(n => {
@@ -110,12 +152,16 @@ export default function SimulateTab() {
           }).length;
           return count >= 10;
         }
+        if (ticket.gameType === "superball") {
+          return drawNumbers.includes(superBall);
+        }
         return false;
       });
 
       newResults.push({
         period: p + 1,
         drawNumbers,
+        superBall,
         winningTickets,
       });
     }
@@ -156,17 +202,17 @@ export default function SimulateTab() {
         </TabsList>
 
         <TabsContent value="bet" className="space-y-4">
-          {/* Prize Table */}
+          {/* Prize Table - 優化手機版 */}
           <Card className="neon-border bg-card">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">獎金表</CardTitle>
-                <div className="flex gap-2">
+            <CardHeader className="pb-2 sm:pb-3">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-xs sm:text-base">獎金表</CardTitle>
+                <div className="flex gap-1 sm:gap-2">
                   <Button
                     variant={!hasNewYearBonus ? "default" : "outline"}
                     onClick={() => setHasNewYearBonus(false)}
                     size="sm"
-                    className="text-xs"
+                    className="text-[10px] sm:text-xs px-2 sm:px-3"
                   >
                     無加碼
                   </Button>
@@ -174,22 +220,22 @@ export default function SimulateTab() {
                     variant={hasNewYearBonus ? "default" : "outline"}
                     onClick={() => setHasNewYearBonus(true)}
                     size="sm"
-                    className="text-xs"
+                    className="text-[10px] sm:text-xs px-2 sm:px-3"
                   >
-                    <Sparkles className="w-3 h-3 mr-1" />
+                    <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
                     過年加碼
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-5 gap-2 text-xs">
+            <CardContent className="p-2 sm:p-4">
+              <div className="grid grid-cols-5 gap-1 sm:gap-2 text-[9px] sm:text-xs">
                 {Object.entries(displayPrizeTable).map(([stars, prize]) => {
                   const starNum = parseInt(stars);
                   return (
-                    <div key={stars} className="text-center p-2 bg-background rounded border border-border">
-                      <div className="font-bold text-neon-blue">{starNum}星</div>
-                      <div className="text-muted-foreground">NT${prize.toLocaleString()}</div>
+                    <div key={stars} className="text-center p-1 sm:p-2 bg-background rounded border border-border">
+                      <div className="font-bold text-neon-blue text-[8px] sm:text-xs">{starNum}星</div>
+                      <div className="text-muted-foreground text-[7px] sm:text-[9px] truncate">NT${prize.toLocaleString()}</div>
                     </div>
                   );
                 })}
@@ -199,59 +245,107 @@ export default function SimulateTab() {
 
           {/* Game Type Selection */}
           <Card className="neon-border bg-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">選擇玩法</CardTitle>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-base">選擇玩法</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant={gameType === "big" ? "default" : "outline"}
                   onClick={() => setGameType("big")}
-                  className="text-sm"
+                  className="text-xs sm:text-sm"
                 >
                   🔴 大
                 </Button>
                 <Button
                   variant={gameType === "small" ? "default" : "outline"}
                   onClick={() => setGameType("small")}
-                  className="text-sm"
+                  className="text-xs sm:text-sm"
                 >
                   🔵 小
                 </Button>
                 <Button
                   variant={gameType === "select" ? "default" : "outline"}
                   onClick={() => setGameType("select")}
-                  className="text-sm"
+                  className="text-xs sm:text-sm"
                 >
                   選擇球號
                 </Button>
                 <Button
                   variant={gameType === "oddeven" ? "default" : "outline"}
                   onClick={() => setGameType("oddeven")}
-                  className="text-sm"
+                  className="text-xs sm:text-sm"
                 >
                   🔵 單 / 🟠 雙
                 </Button>
               </div>
+              <Button
+                variant={gameType === "superball" ? "default" : "outline"}
+                onClick={() => setGameType("superball")}
+                className="w-full text-xs sm:text-sm"
+              >
+                ⭐ 超級獎
+              </Button>
             </CardContent>
           </Card>
 
-          {/* Number Selection */}
+          {/* Number Selection - 優化球號選擇 */}
           {gameType === "select" && (
             <Card className="neon-border bg-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">
-                  選擇球號 ({selectedNumbers.length}/6)
-                </CardTitle>
+              <CardHeader className="pb-2 sm:pb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-xs sm:text-base">
+                    選擇球號 ({selectedNumbers.length}/6)
+                  </CardTitle>
+                  <div className="flex gap-1">
+                    <Button
+                      onClick={handleRandomNumbers}
+                      size="sm"
+                      variant="outline"
+                      className="text-[10px] sm:text-xs px-2 sm:px-3"
+                    >
+                      🎲 隨機
+                    </Button>
+                    <Button
+                      onClick={handleClearNumbers}
+                      size="sm"
+                      variant="outline"
+                      className="text-[10px] sm:text-xs px-2 sm:px-3"
+                    >
+                      🗑️ 清除
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-5 gap-1">
+              <CardContent className="space-y-2">
+                {/* 快速輸入框 */}
+                <div className="flex gap-1">
+                  <input
+                    type="number"
+                    min="1"
+                    max="80"
+                    placeholder="輸入 1-80"
+                    value={inputNumber}
+                    onChange={(e) => setInputNumber(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleInputNumber()}
+                    className="flex-1 px-2 py-1 text-xs sm:text-sm bg-background border border-border rounded text-foreground"
+                  />
+                  <Button
+                    onClick={handleInputNumber}
+                    size="sm"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    加入
+                  </Button>
+                </div>
+                {/* 號碼網格 - 縮小球號 */}
+                <div className="grid grid-cols-8 sm:grid-cols-10 gap-0.5 sm:gap-1">
                   {NUMBERS.map(num => (
                     <button
                       key={num}
                       onClick={() => toggleNumber(num)}
                       className={cn(
-                        "aspect-square text-xs font-bold rounded border-2 transition-all",
+                        "aspect-square text-[8px] sm:text-xs font-bold rounded border transition-all",
                         selectedNumbers.includes(num)
                           ? "bg-neon-blue border-neon-blue text-black"
                           : "bg-card border-border hover:border-neon-blue"
@@ -268,22 +362,22 @@ export default function SimulateTab() {
           {/* Odd/Even Selection */}
           {gameType === "oddeven" && (
             <Card className="neon-border bg-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">選擇單雙</CardTitle>
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-xs sm:text-base">選擇單雙</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant={oddEvenType === "odd" ? "default" : "outline"}
                     onClick={() => setOddEvenType("odd")}
-                    className="text-sm"
+                    className="text-xs sm:text-sm"
                   >
                     🔵 單
                   </Button>
                   <Button
                     variant={oddEvenType === "even" ? "default" : "outline"}
                     onClick={() => setOddEvenType("even")}
-                    className="text-sm"
+                    className="text-xs sm:text-sm"
                   >
                     🟠 雙
                   </Button>
@@ -292,19 +386,19 @@ export default function SimulateTab() {
             </Card>
           )}
 
-          {/* Multiplier Selection */}
+          {/* Multiplier Selection - 擴展投注倍數 */}
           <Card className="neon-border bg-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">級注倍數</CardTitle>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-base">級注倍數</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-5 gap-1">
-                {MULTIPLIERS.map(m => (
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-1">
+                {MULTIPLIERS.map((m: number) => (
                   <button
                     key={m}
                     onClick={() => setMultiplier(m)}
                     className={cn(
-                      "aspect-square text-xs font-bold rounded border-2 transition-all",
+                      "text-[9px] sm:text-xs font-bold py-1 rounded border-2 transition-all",
                       multiplier === m
                         ? "bg-neon-blue border-neon-blue text-black"
                         : "bg-card border-border hover:border-neon-blue"
@@ -317,151 +411,127 @@ export default function SimulateTab() {
             </CardContent>
           </Card>
 
-          {/* Periods Selection */}
+          {/* Periods Selection - 擴展多期投注 */}
           <Card className="neon-border bg-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">投注期數</CardTitle>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-base">投注期數</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">期數</span>
-                <div className="flex items-center gap-2">
+            <CardContent>
+              <div className="space-y-2">
+                <div className="grid grid-cols-6 sm:grid-cols-12 gap-1">
+                  {PERIODS.map((p: number) => (
+                    <button
+                      key={p}
+                      onClick={() => setPeriods(p)}
+                      className={cn(
+                        "text-[9px] sm:text-xs font-bold py-1 rounded border-2 transition-all",
+                        periods === p
+                          ? "bg-neon-blue border-neon-blue text-black"
+                          : "bg-card border-border hover:border-neon-blue"
+                      )}
+                    >
+                      {p}期
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-1 items-center justify-center">
                   <Button
-                    variant="outline"
+                    onClick={() => setPeriods(Math.max(2, periods - 1))}
                     size="sm"
-                    onClick={() => setPeriods(Math.max(1, periods - 1))}
+                    variant="outline"
+                    className="text-xs px-2"
                   >
                     −
                   </Button>
-                  <span className="w-8 text-center font-bold">{periods}</span>
+                  <span className="text-xs sm:text-sm font-bold min-w-[40px] text-center">{periods} 期</span>
                   <Button
-                    variant="outline"
+                    onClick={() => setPeriods(Math.min(12, periods + 1))}
                     size="sm"
-                    onClick={() => setPeriods(periods + 1)}
+                    variant="outline"
+                    className="text-xs px-2"
                   >
                     +
                   </Button>
                 </div>
-              </div>
-              <div className="grid grid-cols-6 gap-1">
-                {[1, 2, 3, 5, 10, 20].map((p: number) => (
-                  <button
-                    key={p}
-                    onClick={() => setPeriods(p)}
-                    className={cn(
-                      "text-xs font-bold py-1 rounded border-2 transition-all",
-                      periods === p
-                        ? "bg-neon-blue border-neon-blue text-black"
-                        : "bg-card border-border hover:border-neon-blue"
-                    )}
-                  >
-                    {p}
-                  </button>
-                ))}
               </div>
             </CardContent>
           </Card>
 
           {/* Groups Selection */}
           <Card className="neon-border bg-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">投注組數</CardTitle>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-base">投注組數</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">組數</span>
-                <div className="flex items-center gap-2">
+            <CardContent>
+              <div className="space-y-2">
+                <div className="grid grid-cols-5 gap-1">
+                  {[1, 2, 3, 5, 10].map((g: number) => (
+                    <button
+                      key={g}
+                      onClick={() => setGroups(g)}
+                      className={cn(
+                        "text-[9px] sm:text-xs font-bold py-1 rounded border-2 transition-all",
+                        groups === g
+                          ? "bg-neon-blue border-neon-blue text-black"
+                          : "bg-card border-border hover:border-neon-blue"
+                      )}
+                    >
+                      {g}組
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-1 items-center justify-center">
                   <Button
-                    variant="outline"
-                    size="sm"
                     onClick={() => setGroups(Math.max(1, groups - 1))}
+                    size="sm"
+                    variant="outline"
+                    className="text-xs px-2"
                   >
                     −
                   </Button>
-                  <span className="w-8 text-center font-bold">{groups}</span>
+                  <span className="text-xs sm:text-sm font-bold min-w-[40px] text-center">{groups} 組</span>
                   <Button
-                    variant="outline"
+                    onClick={() => setGroups(Math.min(10, groups + 1))}
                     size="sm"
-                    onClick={() => setGroups(groups + 1)}
+                    variant="outline"
+                    className="text-xs px-2"
                   >
                     +
                   </Button>
                 </div>
               </div>
-              <div className="grid grid-cols-5 gap-1">
-                {[1, 2, 3, 5, 10].map((g: number) => (
-                  <button
-                    key={g}
-                    onClick={() => setGroups(g)}
-                    className={cn(
-                      "text-xs font-bold py-1 rounded border-2 transition-all",
-                      groups === g
-                        ? "bg-neon-blue border-neon-blue text-black"
-                        : "bg-card border-border hover:border-neon-blue"
-                    )}
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
             </CardContent>
           </Card>
 
           {/* Bet Summary */}
-          {tickets.length > 0 && (
-            <Card className="neon-border bg-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">投注單據</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {tickets.map(ticket => (
-                  <div
-                    key={ticket.id}
-                    className="flex items-center justify-between text-sm p-2 bg-background rounded border border-border"
-                  >
-                    <div className="flex-1">
-                      <div className="font-bold">
-                        {ticket.gameType === "select" && `選號: ${ticket.selectedNumbers.join(", ")}`}
-                        {ticket.gameType === "oddeven" && `${ticket.oddEvenType === "odd" ? "單" : "雙"}數`}
-                        {ticket.gameType === "big" && "大"}
-                        {ticket.gameType === "small" && "小"}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {ticket.multiplier}倍 × {ticket.periods}期 × {ticket.groups}組 = {ticket.totalBet}點
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setTickets(prev => prev.filter(t => t.id !== ticket.id))}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <span className="font-bold">總投注額</span>
-                  <span className="font-bold text-neon-blue">{totalBet} 點</span>
+          <Card className="neon-border bg-card border-neon-blue">
+            <CardContent className="pt-4">
+              <div className="space-y-2 text-xs sm:text-sm">
+                <div className="flex justify-between">
+                  <span>投注金額：</span>
+                  <span className="font-bold text-neon-blue">NT${totalBet.toLocaleString()}</span>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="flex justify-between">
+                  <span>投注組數：</span>
+                  <span className="font-bold">{tickets.length} 組</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={handleAddBet}
-              className="bg-neon-blue hover:bg-neon-blue/80 text-black font-bold"
+              className="bg-neon-blue hover:bg-neon-blue/80 text-black font-bold text-xs sm:text-sm"
             >
-              <Dices className="w-4 h-4 mr-2" />
               加入投注
             </Button>
             <Button
               onClick={handleSimulate}
               disabled={tickets.length === 0}
-              className="bg-neon-green hover:bg-neon-green/80 text-black font-bold"
+              className="bg-green-500 hover:bg-green-600 text-white font-bold text-xs sm:text-sm"
             >
-              <Trophy className="w-4 h-4 mr-2" />
               開始模擬
             </Button>
           </div>
@@ -470,10 +540,9 @@ export default function SimulateTab() {
             <Button
               onClick={handleClear}
               variant="destructive"
-              className="w-full"
+              className="w-full text-xs sm:text-sm"
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              清除全部
+              清除所有投注
             </Button>
           )}
         </TabsContent>
@@ -481,63 +550,39 @@ export default function SimulateTab() {
         <TabsContent value="results" className="space-y-4">
           {results.length === 0 ? (
             <Card className="neon-border bg-card">
-              <CardContent className="pt-6 text-center text-muted-foreground">
-                尚無開獎結果
+              <CardContent className="pt-6 text-center text-muted-foreground text-xs sm:text-sm">
+                尚無模擬結果，請先進行投注並開始模擬
               </CardContent>
             </Card>
           ) : (
             results.map((result, idx) => (
               <Card key={idx} className="neon-border bg-card">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">第 {result.period} 期開獎</CardTitle>
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="text-xs sm:text-base">
+                    第 {result.period} 期 - 開獎號碼
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {/* Draw Numbers */}
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-2">開出號碼</div>
-                    <div className="grid grid-cols-10 gap-1">
-                      {result.drawNumbers.map(num => (
-                        <div
-                          key={num}
-                          className="aspect-square flex items-center justify-center text-xs font-bold rounded bg-neon-green text-black"
-                        >
-                          {num}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Winning Tickets */}
-                  {result.winningTickets.length > 0 && (
-                    <div className="pt-2 border-t border-border">
-                      <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                        <Trophy className="w-3 h-3 text-neon-yellow" />
-                        中獎單據 ({result.winningTickets.length})
+                <CardContent className="space-y-2">
+                  <div className="flex flex-wrap gap-1">
+                    {result.drawNumbers.map(num => (
+                      <div
+                        key={num}
+                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-blue text-black flex items-center justify-center text-[10px] sm:text-xs font-bold"
+                      >
+                        {num}
                       </div>
-                      {result.winningTickets.map((ticket, tidx) => (
-                        <div
-                          key={tidx}
-                          className="text-xs p-2 bg-background rounded border border-neon-yellow mb-1"
-                        >
-                          <div className="font-bold text-neon-yellow">
-                            {ticket.gameType === "select" && `選號: ${ticket.selectedNumbers.join(", ")}`}
-                            {ticket.gameType === "oddeven" && `${ticket.oddEvenType === "odd" ? "單" : "雙"}數`}
-                            {ticket.gameType === "big" && "大"}
-                            {ticket.gameType === "small" && "小"}
-                          </div>
-                          <div className="text-muted-foreground">
-                            獲得: {ticket.totalBet * 2} 點
-                          </div>
-                        </div>
-                      ))}
+                    ))}
+                  </div>
+                  {result.superBall && (
+                    <div className="text-xs sm:text-sm">
+                      <span className="font-bold">超級獎號：</span>
+                      <span className="text-neon-blue font-bold ml-2">{result.superBall}</span>
                     </div>
                   )}
-
-                  {result.winningTickets.length === 0 && (
-                    <div className="text-xs text-muted-foreground text-center py-2">
-                      本期無中獎
-                    </div>
-                  )}
+                  <div className="text-xs sm:text-sm">
+                    <span className="font-bold">中獎組數：</span>
+                    <span className="text-green-400 font-bold ml-2">{result.winningTickets.length}</span>
+                  </div>
                 </CardContent>
               </Card>
             ))
