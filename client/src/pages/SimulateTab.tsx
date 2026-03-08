@@ -237,11 +237,11 @@ export default function SimulateTab() {
         </TabsList>
 
         <TabsContent value="bet" className="space-y-1.5">
-          {/* 獎金表 */}
+          {/* 星級選擇與投注 - 整合區塊 */}
           <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-            <CardHeader className="py-0.5">
+            <CardHeader className="py-1">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-xs">💰 獎金表</CardTitle>
+                <CardTitle className="text-xs">⭐ 選擇星級玩法</CardTitle>
                 <div className="flex gap-1">
                   <Button
                     variant={!hasNewYearBonus ? "default" : "outline"}
@@ -265,32 +265,6 @@ export default function SimulateTab() {
                   </Button>
                 </div>
               </div>
-              {hasNewYearBonus && (
-                <p className="text-xs text-orange-400 mt-0.5">✨ 春節加碼期間：2026/1/28 - 2026/2/10</p>
-              )}
-            </CardHeader>
-            <CardContent className="py-0.5">
-              <div className="grid grid-cols-5 gap-0.5 text-center">
-                {STARS.map((star) => {
-                  const prize = hasNewYearBonus ? STAR_PRIZES_BONUS[star] : STAR_PRIZES[star];
-                  return (
-                    <div
-                      key={star}
-                      className="border border-orange-500 rounded p-0.5 text-xs"
-                    >
-                      <div className="font-bold text-orange-400">{star}星</div>
-                      <div className="text-orange-300 text-xs">NT${formatNumber(prize)}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 星級選擇與投注 - 整合區塊 */}
-          <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-            <CardHeader className="py-1">
-              <CardTitle className="text-xs">⭐ 選擇星級玩法</CardTitle>
               <p className="text-xs text-gray-400 mt-0.5">基本投注：NT$25/顆星 | 點擊星級可選擇投注並自動選號</p>
             </CardHeader>
             <CardContent className="py-0.5 space-y-1">
