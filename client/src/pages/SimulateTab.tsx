@@ -366,13 +366,13 @@ export default function SimulateTab() {
               {/* 投注倍數 */}
               <div className="space-y-0.5">
                 <p className="text-xs text-gray-400">投注倍數</p>
-                <div className="flex flex-wrap gap-0.5">
+                <div className="grid grid-cols-5 sm:grid-cols-10 gap-0.5">
                   {MULTIPLIERS.map(m => (
                     <button
                       key={m}
-                      onClick={() => setBigSmallMultiplier(m)}
+                      onClick={() => setBigSmallMultiplier(bigSmallMultiplier === m ? null : m)}
                       className={cn(
-                        "text-xs px-1 py-0.5 rounded border text-center transition-all",
+                        "text-xs px-0.5 py-0.5 rounded border text-center transition-all",
                         bigSmallMultiplier === m
                           ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
                           : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
@@ -423,13 +423,13 @@ export default function SimulateTab() {
               {/* 投注倍數 */}
               <div className="space-y-0.5">
                 <p className="text-xs text-gray-400">投注倍數</p>
-                <div className="flex flex-wrap gap-0.5">
+                <div className="grid grid-cols-5 sm:grid-cols-10 gap-0.5">
                   {MULTIPLIERS.map(m => (
                     <button
                       key={m}
-                      onClick={() => setOddEvenMultiplier(m)}
+                      onClick={() => setOddEvenMultiplier(oddEvenMultiplier === m ? null : m)}
                       className={cn(
-                        "text-xs px-1 py-0.5 rounded border text-center transition-all",
+                        "text-xs px-0.5 py-0.5 rounded border text-center transition-all",
                         oddEvenMultiplier === m
                           ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
                           : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
@@ -450,13 +450,13 @@ export default function SimulateTab() {
               <p className="text-xs text-gray-400 mt-0.5">請選擇連續投注期數，若只想投注當期，請略過本欄</p>
             </CardHeader>
             <CardContent className="py-0.5">
-              <div className="flex flex-wrap gap-0.5">
+              <div className="grid grid-cols-6 sm:grid-cols-12 gap-1">
                 {PERIODS.map(p => (
                   <button
                     key={p}
-                    onClick={() => setPeriods(p)}
+                    onClick={() => setPeriods(periods === p ? null : p)}
                     className={cn(
-                      "text-xs px-1 py-0.5 rounded border text-center transition-all",
+                      "text-xs px-0 py-1 rounded border text-center transition-all h-7 flex items-center justify-center",
                       periods === p
                         ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
                         : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
