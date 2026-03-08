@@ -31,18 +31,23 @@ const STARS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 // 基礎投注金額：一顆星 25 元
 const BASE_BET = 25;
 
-// 星級價錢對照
-const STAR_PRICES: Record<number, number> = {
-  1: 25,
-  2: 50,
-  3: 75,
-  4: 100,
-  5: 125,
-  6: 150,
-  7: 175,
-  8: 200,
-  9: 225,
-  10: 250,
+// 數字格式化
+const formatNumber = (num: number): string => {
+  return num.toLocaleString('zh-TW');
+};
+
+// 星級獎金對照
+const STAR_PRIZES: Record<number, number> = {
+  1: 50,
+  2: 75,
+  3: 500,
+  4: 1000,
+  5: 7500,
+  6: 25000,
+  7: 80000,
+  8: 500000,
+  9: 1000000,
+  10: 5000000,
 };
 
 export default function SimulateTab() {
@@ -244,11 +249,11 @@ export default function SimulateTab() {
           {/* 星級選號 */}
           <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
             <CardHeader className="py-1">
-              <CardTitle className="text-xs">星級選號（1-10星，單選）</CardTitle>
+              <CardTitle className="text-xs">⭐ 選擇星級玩法</CardTitle>
             </CardHeader>
-            <CardContent className="py-0.5 space-y-0.5">
-              {/* 星級選擇 */}
-              <div className="flex flex-wrap gap-0.5">
+            <CardContent className="py-0.5 space-y-1">
+              {/* 星級選擇 - 2行5列 */}
+              <div className="grid grid-cols-5 gap-1">
                 {STARS.map(star => (
                   <button
                     key={star}
@@ -259,17 +264,25 @@ export default function SimulateTab() {
                       }
                     }}
                     className={cn(
-                      "text-xs px-1 py-0.5 rounded border text-center transition-all",
+                      "text-xs px-2 py-1.5 rounded-lg border-2 text-center transition-all font-bold",
                       selectedStar === star
-                        ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
-                        : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
+                        ? "bg-yellow-900/40 text-yellow-400 border-yellow-500 shadow-lg"
+                        : "bg-black/40 text-gray-300 border-gray-700 hover:border-yellow-500"
                     )}
                   >
-                    <div className="font-bold">{star}</div>
-                    <div className="text-xs">{STAR_PRICES[star]}元</div>
+                    <div className="font-bold text-sm">{star}星</div>
+                    <div className="text-xs text-gray-400">NT${formatNumber(STAR_PRIZES[star])}</div>
                   </button>
                 ))}
               </div>
+              
+              {/* 底部獎金顯示 */}
+              {selectedStar && (
+                <div className="text-center text-xs text-gray-400 mt-1 pt-1 border-t border-gray-700">
+                  <span>選 {selectedStar} 個號碼 · 全中獎金 </span>
+                  <span className="text-yellow-400 font-bold">NT${formatNumber(STAR_PRIZES[selectedStar])}</span>
+                </div>
+              )}
 
               {/* 號碼選擇 */}
               {selectedNumbers.length > 0 && (
