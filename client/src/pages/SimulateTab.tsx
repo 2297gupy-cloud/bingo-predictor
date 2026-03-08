@@ -544,10 +544,30 @@ export default function SimulateTab() {
         </TabsContent>
 
         <TabsContent value="results" className="space-y-1.5">
+          {/* 顯示投注記錄 */}
+          {tickets.length > 0 && (
+            <Card className="border-green-500 bg-black/40">
+              <CardHeader className="py-1">
+                <CardTitle className="text-xs">🎲 投注記錄</CardTitle>
+              </CardHeader>
+              <CardContent className="py-0.5 space-y-1">
+                {tickets.map(ticket => (
+                  <div key={ticket.id} className="text-xs text-green-400 border border-green-500/30 rounded p-1">
+                    {ticket.gameType === 'base' ? '基礎投注' : ticket.gameType === 'big' ? '大' : ticket.gameType === 'small' ? '小' : '單雙'} ×{ticket.multiplier || 1} {ticket.periods}期 - NT${formatNumber(ticket.totalBet)}
+                  </div>
+                ))}
+                <div className="text-xs text-green-400 font-bold border-t border-green-500/30 pt-1 mt-1">
+                  投注總額： NT${formatNumber(tickets.reduce((sum, t) => sum + t.totalBet, 0))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 顯示開獨結果 */}
           {results.length === 0 ? (
             <Card className="border-orange-500 bg-black/40">
               <CardContent className="py-4 text-center text-xs text-gray-400">
-                尚無開獎結果
+                等待開獨中...
               </CardContent>
             </Card>
           ) : (
