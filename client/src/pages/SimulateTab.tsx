@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dices, RotateCcw, Trophy, TrendingUp, History, X } from "lucide-react";
+import { Dices, RotateCcw, Trophy, TrendingUp, History, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BetTicket {
@@ -12,6 +12,7 @@ interface BetTicket {
   oddEvenType?: "odd" | "even";
   multiplier: number;
   periods: number;
+  groups: number;
   totalBet: number;
 }
 
@@ -21,8 +22,25 @@ interface DrawResult {
   winningTickets: BetTicket[];
 }
 
-const MULTIPLIERS = [2, 3, 4, 5, 6, 8, 10, 12, 20, 50];
+const MULTIPLIERS = [1, 2, 5, 10, 50];
 const NUMBERS = Array.from({ length: 80 }, (_, i) => i + 1);
+
+// 獎金表 (標準獎金)
+const PRIZE_TABLE: Record<number, number> = {
+  1: 50,
+  2: 75,
+  3: 500,
+  4: 1000,
+  5: 7500,
+  6: 25000,
+  7: 80000,
+  8: 500000,
+  9: 1000000,
+  10: 5000000,
+};
+
+// 過年加碼倍數 (例如: 1.5倍)
+const NEW_YEAR_BONUS_MULTIPLIER = 1.5;
 
 function generateRandomNumbers(count: number, max: number = 80): number[] {
   const pool = Array.from({ length: max }, (_, i) => i + 1);
@@ -39,11 +57,13 @@ export default function SimulateTab() {
   const [gameType, setGameType] = useState<"big" | "small" | "select" | "oddeven">("select");
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [oddEvenType, setOddEvenType] = useState<"odd" | "even">("odd");
-  const [multiplier, setMultiplier] = useState(2);
+  const [multiplier, setMultiplier] = useState(1);
   const [periods, setPeriods] = useState(1);
+  const [groups, setGroups] = useState(1);
   const [tickets, setTickets] = useState<BetTicket[]>([]);
   const [results, setResults] = useState<DrawResult[]>([]);
   const [activeTab, setActiveTab] = useState("bet");
+  const [hasNewYearBonus, setHasNewYearBonus] = useState(false);
 
   const toggleNumber = useCallback((num: number) => {
     setSelectedNumbers(prev => {
@@ -64,12 +84,13 @@ export default function SimulateTab() {
       oddEvenType: gameType === "oddeven" ? oddEvenType : undefined,
       multiplier,
       periods,
-      totalBet: multiplier * periods * 50,
+      groups,
+      totalBet: multiplier * periods * groups * 50,
     };
 
     setTickets(prev => [...prev, newTicket]);
     setSelectedNumbers([]);
-  }, [gameType, selectedNumbers, oddEvenType, multiplier, periods, tickets.length]);
+  }, [gameType, selectedNumbers, oddEvenType, multiplier, periods, groups, tickets.length]);
 
   const handleSimulate = useCallback(() => {
     if (tickets.length === 0) return;
@@ -113,6 +134,19 @@ export default function SimulateTab() {
     return tickets.reduce((sum, t) => sum + t.totalBet, 0);
   }, [tickets]);
 
+  const displayPrizeTable = useMemo(() => {
+    const table: Record<number, number> = { ...PRIZE_TABLE };
+    if (hasNewYearBonus) {
+      Object.keys(table).forEach(key => {
+        const numKey = parseInt(key);
+        table[numKey] = Math.round(
+          table[numKey] * NEW_YEAR_BONUS_MULTIPLIER
+        );
+      });
+    }
+    return table;
+  }, [hasNewYearBonus]);
+
   return (
     <div className="space-y-4 pb-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -122,6 +156,47 @@ export default function SimulateTab() {
         </TabsList>
 
         <TabsContent value="bet" className="space-y-4">
+          {/* Prize Table */}
+          <Card className="neon-border bg-card">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">獎金表</CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant={!hasNewYearBonus ? "default" : "outline"}
+                    onClick={() => setHasNewYearBonus(false)}
+                    size="sm"
+                    className="text-xs"
+                  >
+                    無加碼
+                  </Button>
+                  <Button
+                    variant={hasNewYearBonus ? "default" : "outline"}
+                    onClick={() => setHasNewYearBonus(true)}
+                    size="sm"
+                    className="text-xs"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    過年加碼
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-5 gap-2 text-xs">
+                {Object.entries(displayPrizeTable).map(([stars, prize]) => {
+                  const starNum = parseInt(stars);
+                  return (
+                    <div key={stars} className="text-center p-2 bg-background rounded border border-border">
+                      <div className="font-bold text-neon-blue">{starNum}星</div>
+                      <div className="text-muted-foreground">NT${prize.toLocaleString()}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Game Type Selection */}
           <Card className="neon-border bg-card">
             <CardHeader className="pb-3">
@@ -134,14 +209,14 @@ export default function SimulateTab() {
                   onClick={() => setGameType("big")}
                   className="text-sm"
                 >
-                  大
+                  🔴 大
                 </Button>
                 <Button
                   variant={gameType === "small" ? "default" : "outline"}
                   onClick={() => setGameType("small")}
                   className="text-sm"
                 >
-                  小
+                  🔵 小
                 </Button>
                 <Button
                   variant={gameType === "select" ? "default" : "outline"}
@@ -155,7 +230,7 @@ export default function SimulateTab() {
                   onClick={() => setGameType("oddeven")}
                   className="text-sm"
                 >
-                  猜單雙
+                  🔵 單 / 🟠 雙
                 </Button>
               </div>
             </CardContent>
@@ -203,14 +278,14 @@ export default function SimulateTab() {
                     onClick={() => setOddEvenType("odd")}
                     className="text-sm"
                   >
-                    單數
+                    🔵 單
                   </Button>
                   <Button
                     variant={oddEvenType === "even" ? "default" : "outline"}
                     onClick={() => setOddEvenType("even")}
                     className="text-sm"
                   >
-                    雙數
+                    🟠 雙
                   </Button>
                 </div>
               </CardContent>
@@ -235,7 +310,7 @@ export default function SimulateTab() {
                         : "bg-card border-border hover:border-neon-blue"
                     )}
                   >
-                    {m}
+                    {m}x
                   </button>
                 ))}
               </div>
@@ -268,6 +343,67 @@ export default function SimulateTab() {
                   </Button>
                 </div>
               </div>
+              <div className="grid grid-cols-6 gap-1">
+                {[1, 2, 3, 5, 10, 20].map((p: number) => (
+                  <button
+                    key={p}
+                    onClick={() => setPeriods(p)}
+                    className={cn(
+                      "text-xs font-bold py-1 rounded border-2 transition-all",
+                      periods === p
+                        ? "bg-neon-blue border-neon-blue text-black"
+                        : "bg-card border-border hover:border-neon-blue"
+                    )}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Groups Selection */}
+          <Card className="neon-border bg-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">投注組數</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">組數</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setGroups(Math.max(1, groups - 1))}
+                  >
+                    −
+                  </Button>
+                  <span className="w-8 text-center font-bold">{groups}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setGroups(groups + 1)}
+                  >
+                    +
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-1">
+                {[1, 2, 3, 5, 10].map((g: number) => (
+                  <button
+                    key={g}
+                    onClick={() => setGroups(g)}
+                    className={cn(
+                      "text-xs font-bold py-1 rounded border-2 transition-all",
+                      groups === g
+                        ? "bg-neon-blue border-neon-blue text-black"
+                        : "bg-card border-border hover:border-neon-blue"
+                    )}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
@@ -291,7 +427,7 @@ export default function SimulateTab() {
                         {ticket.gameType === "small" && "小"}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {ticket.multiplier}倍 × {ticket.periods}期 = {ticket.totalBet}點
+                        {ticket.multiplier}倍 × {ticket.periods}期 × {ticket.groups}組 = {ticket.totalBet}點
                       </div>
                     </div>
                     <Button
