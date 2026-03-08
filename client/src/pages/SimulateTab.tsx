@@ -239,7 +239,7 @@ export default function SimulateTab() {
         <TabsContent value="bet" className="space-y-1.5">
           {/* 獎金表 */}
           <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-            <CardHeader className="py-1">
+            <CardHeader className="py-0.5">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-xs">💰 獎金表</CardTitle>
                 <div className="flex gap-1">
@@ -261,7 +261,7 @@ export default function SimulateTab() {
                       hasNewYearBonus && "bg-orange-500 hover:bg-orange-600 text-white"
                     )}
                   >
-                    過年加碼
+                    節慶加碼
                   </Button>
                 </div>
               </div>
