@@ -40,6 +40,7 @@ const formatNumber = (num: number): string => {
 };
 
 // 星級獎金對照
+// 星級獎金對照 - 平日獎金
 const STAR_PRIZES: Record<number, number> = {
   1: 50,
   2: 75,
@@ -51,6 +52,20 @@ const STAR_PRIZES: Record<number, number> = {
   8: 500000,
   9: 1000000,
   10: 5000000,
+};
+
+// 過年加碼獎金 - 春節加碼期間
+const STAR_PRIZES_BONUS: Record<number, number> = {
+  1: 75,
+  2: 150,
+  3: 1000,
+  4: 1500,
+  5: 11250,
+  6: 37500,
+  7: 120000,
+  8: 750000,
+  9: 1500000,
+  10: 7500000,
 };
 
 export default function SimulateTab() {
@@ -254,19 +269,19 @@ export default function SimulateTab() {
               )}
             </CardHeader>
             <CardContent className="py-0.5">
-              <div className="grid grid-cols-2 gap-0.5 text-center">
-                {[
-                  { name: "大小", prize: "NT$150" },
-                  { name: "單雙", prize: "NT$150" },
-                ].map((item) => (
-                  <div
-                    key={item.name}
-                    className="border border-orange-500 rounded p-0.5 text-xs"
-                  >
-                    <div className="font-bold text-orange-400">{item.name}</div>
-                    <div className="text-orange-300 text-xs">{item.prize}</div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-5 gap-0.5 text-center">
+                {STARS.map((star) => {
+                  const prize = hasNewYearBonus ? STAR_PRIZES_BONUS[star] : STAR_PRIZES[star];
+                  return (
+                    <div
+                      key={star}
+                      className="border border-orange-500 rounded p-0.5 text-xs"
+                    >
+                      <div className="font-bold text-orange-400">{star}星</div>
+                      <div className="text-orange-300 text-xs">NT${formatNumber(prize)}</div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -306,7 +321,7 @@ export default function SimulateTab() {
 
               {(selectedStar || betStar) && (
                 <p className="text-xs text-orange-400 text-center">
-                  {selectedStar && `選 ${selectedNumbers.length} 個號碼 · 全中獎金 NT$${formatNumber(STAR_PRIZES[selectedStar])}`}
+                  {selectedStar && `選 ${selectedNumbers.length} 個號碼 · 全中獎金 NT$${formatNumber(hasNewYearBonus ? STAR_PRIZES_BONUS[selectedStar] : STAR_PRIZES[selectedStar])}`}
                   {betStar && ` | 投注星級：${betStar}星`}
                 </p>
               )}
