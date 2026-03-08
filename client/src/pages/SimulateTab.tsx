@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,10 +10,11 @@ import { cn } from "@/lib/utils";
 
 interface BetTicket {
   id: number;
+  star: number;
   gameType: "big" | "small" | "oddeven";
   betType: "big" | "small" | "odd" | "even";
   multiplier: number | null;
-  periods: number;
+  periods: number | null;
   totalBet: number;
 }
 
@@ -65,6 +68,8 @@ export default function SimulateTab() {
   const [bigSmallMultiplier, setBigSmallMultiplier] = useState<number | null>(null);
   const [oddEvenMultiplier, setOddEvenMultiplier] = useState<number | null>(null);
   const [periods, setPeriods] = useState<number | null>(null);
+  // 投注星級
+  const [betStar, setBetStar] = useState<number | null>(null);
   
   // 投注記錄
   const [tickets, setTickets] = useState<BetTicket[]>([]);
@@ -73,25 +78,41 @@ export default function SimulateTab() {
   const [hasNewYearBonus, setHasNewYearBonus] = useState(false);
 
   // 計算投注金額
-  const calculateBetAmount = (multiplier: number | null, periods: number | null) => {
+  const calculateBetAmount = (star: number, multiplier: number | null, periods: number | null) => {
     if (multiplier === null || periods === null) return 0;
-    return BASE_BET * multiplier * periods;
+    return BASE_BET * star * multiplier * periods;
   };
 
   // 計算預估獎金
   const calculateEstimatedWinnings = () => {
     let total = 0;
-    if (selectedBigSmall.length > 0 && bigSmallMultiplier && periods) {
-      total += 150 * bigSmallMultiplier * periods * selectedBigSmall.length;
+    if (betStar && selectedBigSmall.length > 0 && bigSmallMultiplier && periods) {
+      total += 150 * betStar * bigSmallMultiplier * periods * selectedBigSmall.length;
     }
-    if (selectedOddEven.length > 0 && oddEvenMultiplier && periods) {
-      total += 150 * oddEvenMultiplier * periods * selectedOddEven.length;
+    if (betStar && selectedOddEven.length > 0 && oddEvenMultiplier && periods) {
+      total += 150 * betStar * oddEvenMultiplier * periods * selectedOddEven.length;
     }
     return total;
   };
 
   // 添加投注
   const handleAddBet = () => {
+    if (!betStar) {
+      alert("請選擇投注星級");
+      return;
+    }
+    if (selectedBigSmall.length === 0 && selectedOddEven.length === 0) {
+      alert("請選擇玩法（大小或單雙）");
+      return;
+    }
+    if (!bigSmallMultiplier && selectedBigSmall.length > 0) {
+      alert("請選擇大小的投注倍數");
+      return;
+    }
+    if (!oddEvenMultiplier && selectedOddEven.length > 0) {
+      alert("請選擇單雙的投注倍數");
+      return;
+    }
     if (!periods) {
       alert("請選擇投注期數");
       return;
@@ -105,11 +126,12 @@ export default function SimulateTab() {
       if (bigSmallMultiplier !== null) {
         newTickets.push({
           id: ticketId++,
+          star: betStar,
           gameType: type === "big" ? "big" : "small",
           betType: type,
           multiplier: bigSmallMultiplier,
           periods: periods,
-          totalBet: calculateBetAmount(bigSmallMultiplier, periods),
+          totalBet: calculateBetAmount(betStar, bigSmallMultiplier, periods),
         });
       }
     });
@@ -119,11 +141,12 @@ export default function SimulateTab() {
       if (oddEvenMultiplier !== null) {
         newTickets.push({
           id: ticketId++,
+          star: betStar,
           gameType: "oddeven",
           betType: type,
           multiplier: oddEvenMultiplier,
           periods: periods,
-          totalBet: calculateBetAmount(oddEvenMultiplier, periods),
+          totalBet: calculateBetAmount(betStar, oddEvenMultiplier, periods),
         });
       }
     });
@@ -183,36 +206,33 @@ export default function SimulateTab() {
   };
 
   const totalBetAmount = tickets.reduce((sum, ticket) => sum + ticket.totalBet, 0);
-  const estimatedWinnings = calculateEstimatedWinnings();
 
   return (
-    <div className="w-full space-y-0.5 sm:space-y-1">
+    <div className="space-y-2 px-2 sm:px-4 py-2">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-6">
+        <TabsList className="grid w-full grid-cols-2 bg-black/40 border border-orange-500">
           <TabsTrigger value="bet" className="text-xs">投注</TabsTrigger>
           <TabsTrigger value="results" className="text-xs">結果</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="bet" className="space-y-0.5 sm:space-y-1">
+        <TabsContent value="bet" className="space-y-1.5">
           {/* 獎金表 */}
           <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
             <CardHeader className="py-1">
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="text-xs">獎金表</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-xs">💰 獎金表</CardTitle>
                 <div className="flex gap-1">
                   <Button
-                    size="sm"
                     variant={!hasNewYearBonus ? "default" : "outline"}
                     onClick={() => setHasNewYearBonus(false)}
                     className={cn(
                       "text-xs px-1.5 h-5",
-                      !hasNewYearBonus && "bg-cyan-400 hover:bg-cyan-500 text-black"
+                      !hasNewYearBonus && "bg-orange-500 hover:bg-orange-600 text-white"
                     )}
                   >
                     無加碼
                   </Button>
                   <Button
-                    size="sm"
                     variant={hasNewYearBonus ? "default" : "outline"}
                     onClick={() => setHasNewYearBonus(true)}
                     className={cn(
@@ -272,57 +292,66 @@ export default function SimulateTab() {
                     )}
                   >
                     <div className="font-bold text-xs sm:text-sm">{star}星</div>
-                    <div className="text-xs sm:text-xs text-gray-400 truncate leading-tight">NT${formatNumber(STAR_PRIZES[star]).slice(0, 6)}</div>
+                    <div className="text-xs text-gray-400 truncate leading-tight">NT${formatNumber(STAR_PRIZES[star]).slice(0, 6)}</div>
                   </button>
                 ))}
               </div>
               
-              {/* 底部獎金顯示 */}
               {selectedStar && (
-                <div className="text-center text-xs text-gray-400 mt-1 pt-1 border-t border-gray-700">
-                  <span>選 {selectedStar} 個號碼 · 全中獎金 </span>
-                  <span className="text-yellow-400 font-bold">NT${formatNumber(STAR_PRIZES[selectedStar])}</span>
-                </div>
+                <p className="text-xs text-gray-400 text-center">
+                  選 {selectedStar} 個號碼 · 全中獎金 NT${formatNumber(STAR_PRIZES[selectedStar])}
+                </p>
               )}
 
               {/* 號碼選擇 */}
-              {selectedNumbers.length > 0 && (
-                <div>
-                  <p className="text-xs text-gray-400 mb-0.5">已選號碼：</p>
-                  <div className="flex flex-wrap gap-0.5">
-                    {selectedNumbers.map(num => (
-                      <span
-                        key={num}
-                        className="bg-orange-500 text-white text-xs px-1 py-0.5 rounded cursor-pointer hover:bg-orange-600"
-                        onClick={() => setSelectedNumbers(prev => prev.filter(n => n !== num))}
-                      >
-                        {num}
-                      </span>
-                    ))}
-                  </div>
+              <div className="space-y-0.5">
+                <p className="text-xs text-gray-400">選擇號碼</p>
+                <div className="grid grid-cols-8 sm:grid-cols-10 gap-0.5">
+                  {Array.from({ length: 80 }, (_, i) => i + 1).map(num => (
+                    <button
+                      key={num}
+                      onClick={() => {
+                        setSelectedNumbers(prev =>
+                          prev.includes(num)
+                            ? prev.filter(n => n !== num)
+                            : [...prev, num]
+                        );
+                      }}
+                      className={cn(
+                        "text-xs px-0.5 py-0.5 rounded border text-center",
+                        selectedNumbers.includes(num)
+                          ? "bg-green-500 text-white border-green-600 shadow-lg"
+                          : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
+                      )}
+                    >
+                      {num}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
+            </CardContent>
+          </Card>
 
-              {/* 號碼網格 */}
-              <div className="grid grid-cols-10 gap-0.5 text-center">
-                {Array.from({ length: 80 }, (_, i) => i + 1).map(num => (
+          {/* 投注星級選擇 */}
+          <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
+            <CardHeader className="py-1">
+              <CardTitle className="text-xs">投注星級</CardTitle>
+              <p className="text-xs text-gray-400 mt-0.5">基本投注：NT$25/顆星</p>
+            </CardHeader>
+            <CardContent className="py-0.5">
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-0.5">
+                {STARS.map(star => (
                   <button
-                    key={num}
-                    onClick={() => {
-                      setSelectedNumbers(prev =>
-                        prev.includes(num)
-                          ? prev.filter(n => n !== num)
-                          : [...prev, num]
-                      );
-                    }}
+                    key={star}
+                    onClick={() => setBetStar(betStar === star ? null : star)}
                     className={cn(
-                      "text-xs px-0.5 py-0.5 rounded border text-center",
-                      selectedNumbers.includes(num)
-                        ? "bg-green-500 text-white border-green-600 shadow-lg"
+                      "text-xs px-0.5 py-0.5 rounded border text-center transition-all",
+                      betStar === star
+                        ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
                         : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
                     )}
                   >
-                    {num}
+                    {star}星
                   </button>
                 ))}
               </div>
@@ -474,119 +503,95 @@ export default function SimulateTab() {
             <CardContent className="py-0.5 space-y-0.5">
               <div className="text-xs">
                 <p className="text-gray-400">基礎投注：NT${BASE_BET}/顆星</p>
-                {bigSmallMultiplier && periods && (
+                {betStar && (
                   <p className="text-orange-400">
-                    大小投注：NT${BASE_BET} × {bigSmallMultiplier} × {periods} = NT${calculateBetAmount(bigSmallMultiplier, periods)}/組
+                    選擇投注：{betStar}星 × NT${BASE_BET} = NT${formatNumber(BASE_BET * betStar)}/組
                   </p>
                 )}
-                {oddEvenMultiplier && periods && (
+                {betStar && bigSmallMultiplier && periods && (
                   <p className="text-orange-400">
-                    單雙投注：NT${BASE_BET} × {oddEvenMultiplier} × {periods} = NT${calculateBetAmount(oddEvenMultiplier, periods)}/組
+                    大小投注：NT${formatNumber(BASE_BET * betStar)} × {bigSmallMultiplier} × {periods} = NT${formatNumber(calculateBetAmount(betStar, bigSmallMultiplier, periods))}/組
                   </p>
                 )}
-                {estimatedWinnings > 0 && (
-                  <p className="text-green-400 mt-0.5">
-                    預估獎金：NT${estimatedWinnings}
+                {betStar && oddEvenMultiplier && periods && (
+                  <p className="text-orange-400">
+                    單雙投注：NT${formatNumber(BASE_BET * betStar)} × {oddEvenMultiplier} × {periods} = NT${formatNumber(calculateBetAmount(betStar, oddEvenMultiplier, periods))}/組
+                  </p>
+                )}
+                {calculateEstimatedWinnings() > 0 && (
+                  <p className="text-green-400 font-bold">
+                    預估獎金：NT${formatNumber(calculateEstimatedWinnings())}
                   </p>
                 )}
               </div>
             </CardContent>
           </Card>
+
+          {/* 投注按鈕 */}
+          <div className="flex gap-1">
+            <Button onClick={handleAddBet} className="flex-1 text-xs h-7 bg-orange-500 hover:bg-orange-600">
+              加入投注
+            </Button>
+            <Button onClick={handleClearBets} variant="outline" className="flex-1 text-xs h-7">
+              清除投注
+            </Button>
+            <Button onClick={handleSimulateDraw} className="flex-1 text-xs h-7 bg-green-600 hover:bg-green-700">
+              模擬開獎
+            </Button>
+          </div>
 
           {/* 投注記錄 */}
           {tickets.length > 0 && (
             <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
               <CardHeader className="py-1">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xs">投注記錄</CardTitle>
-                  <span className="text-xs text-orange-400">共 {tickets.length} 組</span>
-                </div>
+                <CardTitle className="text-xs">投注記錄 (最多12期)</CardTitle>
               </CardHeader>
-              <CardContent className="py-0.5 space-y-0.5 max-h-24 overflow-y-auto">
-                {tickets.map((ticket) => (
-                  <div key={ticket.id} className="flex items-center justify-between text-xs bg-black/20 p-0.5 rounded">
-                    <div className="flex-1">
-                      <span className="text-gray-300">
-                        {ticket.betType === "big" ? "大" : ticket.betType === "small" ? "小" : ticket.betType === "odd" ? "單" : "雙"}
-                        {" "}×{ticket.multiplier} × {ticket.periods}期
-                      </span>
-                      <span className="text-orange-400 ml-2">NT${ticket.totalBet}</span>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
+              <CardContent className="py-0.5 space-y-0.5 max-h-40 overflow-y-auto">
+                {tickets.map(ticket => (
+                  <div key={ticket.id} className="flex justify-between items-center text-xs bg-black/20 p-1 rounded">
+                    <span className="text-gray-300">
+                      {ticket.star}星 {ticket.betType === "big" ? "大" : ticket.betType === "small" ? "小" : ticket.betType === "odd" ? "單" : "雙"} ×{ticket.multiplier} {ticket.periods}期 = NT${formatNumber(ticket.totalBet)}
+                    </span>
+                    <button
                       onClick={() => handleDeleteBet(ticket.id)}
-                      className="h-4 w-4 p-0"
+                      className="text-red-400 hover:text-red-600"
                     >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 ))}
+                <div className="text-xs text-orange-400 font-bold pt-1 border-t border-gray-600">
+                  投注總額：NT${formatNumber(totalBetAmount)}
+                </div>
               </CardContent>
             </Card>
           )}
-
-          {/* 投注總額和按鈕 */}
-          <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-            <CardContent className="py-0.5 space-y-0.5">
-              <div className="flex justify-between text-xs">
-                <span>投注總額：</span>
-                <span className="text-orange-400 font-bold">NT${totalBetAmount}</span>
-              </div>
-              <div className="flex gap-0.5">
-                <Button
-                  onClick={handleAddBet}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs h-6"
-                >
-                  加入投注
-                </Button>
-                <Button
-                  onClick={handleClearBets}
-                  variant="outline"
-                  className="flex-1 text-xs h-6"
-                >
-                  <RotateCcw className="w-3 h-3 mr-0.5" />
-                  清除
-                </Button>
-              </div>
-              <Button
-                onClick={handleSimulateDraw}
-                className="w-full bg-green-600 hover:bg-green-700 text-white text-xs h-6"
-              >
-                開獎模擬
-              </Button>
-            </CardContent>
-          </Card>
         </TabsContent>
 
-        <TabsContent value="results" className="space-y-0.5 sm:space-y-1">
+        <TabsContent value="results" className="space-y-1.5">
           {results.length === 0 ? (
             <Card className="border-orange-500 bg-black/40">
-              <CardContent className="py-1 text-center text-gray-400 text-xs">
+              <CardContent className="py-4 text-center text-xs text-gray-400">
                 尚無開獎結果
               </CardContent>
             </Card>
           ) : (
-            results.map((result, idx) => (
-              <Card key={idx} className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
+            results.map(result => (
+              <Card key={result.period} className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
                 <CardHeader className="py-1">
-                  <CardTitle className="text-xs">第 {result.period} 期</CardTitle>
+                  <CardTitle className="text-xs">第 {result.period} 期 開獎結果</CardTitle>
                 </CardHeader>
-                <CardContent className="py-0.5 space-y-0.5">
-                  <div>
-                    <p className="text-xs text-gray-400">開獎號碼</p>
-                    <div className="flex flex-wrap gap-0.5 mt-0.5">
-                      {result.drawNumbers.map(num => (
-                        <span key={num} className="bg-orange-500 text-white text-xs px-1 py-0.5 rounded">
-                          {num}
-                        </span>
-                      ))}
-                    </div>
+                <CardContent className="py-0.5 space-y-1">
+                  <div className="grid grid-cols-10 gap-0.5">
+                    {result.drawNumbers.map((num, idx) => (
+                      <div key={idx} className="text-xs bg-orange-500/20 border border-orange-500 rounded p-1 text-center text-orange-400 font-bold">
+                        {num}
+                      </div>
+                    ))}
                   </div>
                   {result.winningTickets.length > 0 && (
-                    <div>
-                      <p className="text-xs text-green-400">中獎組數：{result.winningTickets.length}</p>
-                      <p className="text-xs text-green-400">獎金：NT${result.winningTickets.reduce((sum, t) => sum + t.totalBet * 3, 0)}</p>
+                    <div className="text-xs text-green-400">
+                      中獎投注：{result.winningTickets.length} 組
                     </div>
                   )}
                 </CardContent>
