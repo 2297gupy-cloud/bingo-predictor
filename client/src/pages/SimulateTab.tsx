@@ -101,55 +101,53 @@ export default function SimulateTab() {
       alert("請選擇投注星級");
       return;
     }
-    if (selectedBigSmall.length === 0 && selectedOddEven.length === 0) {
-      alert("請選擇玩法（大小或單雙）");
-      return;
-    }
-    if (!bigSmallMultiplier && selectedBigSmall.length > 0) {
-      alert("請選擇大小的投注倍數");
-      return;
-    }
-    if (!oddEvenMultiplier && selectedOddEven.length > 0) {
-      alert("請選擇單雙的投注倍數");
-      return;
-    }
-    if (!periods) {
-      alert("請選擇投注期數");
-      return;
-    }
 
     const newTickets: BetTicket[] = [];
     let ticketId = tickets.length + 1;
 
-    // 添加大小投注
-    selectedBigSmall.forEach(type => {
-      if (bigSmallMultiplier !== null) {
-        newTickets.push({
-          id: ticketId++,
-          star: betStar,
-          gameType: type === "big" ? "big" : "small",
-          betType: type,
-          multiplier: bigSmallMultiplier,
-          periods: periods,
-          totalBet: calculateBetAmount(betStar, bigSmallMultiplier, periods),
-        });
-      }
-    });
+    // 如果沒有選擇玩法，只投注基礎投注（星級）
+    if (selectedBigSmall.length === 0 && selectedOddEven.length === 0) {
+      newTickets.push({
+        id: ticketId++,
+        star: betStar,
+        gameType: "big",
+        betType: "big",
+        multiplier: null,
+        periods: periods || 1,
+        totalBet: BASE_BET * betStar * (periods || 1),
+      });
+    } else {
 
-    // 添加單雙投注
-    selectedOddEven.forEach(type => {
-      if (oddEvenMultiplier !== null) {
-        newTickets.push({
-          id: ticketId++,
-          star: betStar,
-          gameType: "oddeven",
-          betType: type,
-          multiplier: oddEvenMultiplier,
-          periods: periods,
-          totalBet: calculateBetAmount(betStar, oddEvenMultiplier, periods),
-        });
-      }
-    });
+      // 添加大小投注
+      selectedBigSmall.forEach(type => {
+        if (bigSmallMultiplier !== null) {
+          newTickets.push({
+            id: ticketId++,
+            star: betStar,
+            gameType: type === "big" ? "big" : "small",
+            betType: type,
+            multiplier: bigSmallMultiplier,
+            periods: periods || 1,
+            totalBet: calculateBetAmount(betStar, bigSmallMultiplier, periods || 1),
+          });
+        }
+      });
+
+      // 添加單雙投注
+      selectedOddEven.forEach(type => {
+        if (oddEvenMultiplier !== null) {
+          newTickets.push({
+            id: ticketId++,
+            star: betStar,
+            gameType: "oddeven",
+            betType: type,
+            multiplier: oddEvenMultiplier,
+            periods: periods || 1,
+            totalBet: calculateBetAmount(betStar, oddEvenMultiplier, periods || 1),
+          });
+        }
+      });
+    }
 
     if (newTickets.length > 0) {
       setTickets([...newTickets, ...tickets]);
