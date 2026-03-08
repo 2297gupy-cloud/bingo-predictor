@@ -76,9 +76,9 @@ export default function SimulateTab() {
   const [activeTab, setActiveTab] = useState("bet");
   const [hasNewYearBonus, setHasNewYearBonus] = useState(false);
 
-  // 計算投注金額
-  const calculateBetAmount = (star: number, multiplier: number | null, periods: number | null) => {
-    return BASE_BET * star * (multiplier || 1) * (periods || 1);
+  // 計算投注金額 - 只受倍數和期數影響，不受星級和選號數量影響
+  const calculateBetAmount = (multiplier: number | null, periods: number | null) => {
+    return BASE_BET * (multiplier || 1) * (periods || 1);
   };
 
   // 計算預估獎金
@@ -114,7 +114,7 @@ export default function SimulateTab() {
         betType: type,
         multiplier: bigSmallMultiplier,
         periods: periods || 1,
-        totalBet: calculateBetAmount(betStar, bigSmallMultiplier, periods),
+        totalBet: calculateBetAmount(bigSmallMultiplier, periods),
       });
     });
 
@@ -127,11 +127,11 @@ export default function SimulateTab() {
         betType: type,
         multiplier: oddEvenMultiplier,
         periods: periods || 1,
-        totalBet: calculateBetAmount(betStar, oddEvenMultiplier, periods),
+        totalBet: calculateBetAmount(oddEvenMultiplier, periods),
       });
     });
 
-    // 如果沒有選擇玩法，只投注基礎投注（星級）
+    // 如果沒有選擇玩法，只投注基礎投注
     if (selectedBigSmall.length === 0 && selectedOddEven.length === 0) {
       newTickets.push({
         id: ticketId++,
@@ -140,7 +140,7 @@ export default function SimulateTab() {
         betType: "base",
         multiplier: null,
         periods: periods || 1,
-        totalBet: BASE_BET * betStar * (periods || 1),
+        totalBet: calculateBetAmount(null, periods),
       });
     }
 
@@ -490,12 +490,12 @@ export default function SimulateTab() {
                   </p>
                   {selectedBigSmall.length > 0 && (
                     <p className="text-orange-400">
-                      大小投注：NT${formatNumber(BASE_BET * betStar)} × {bigSmallMultiplier || 1} × {periods || 1} = NT${formatNumber(calculateBetAmount(betStar, bigSmallMultiplier, periods || 1))}/組
+                      大小投注：NT${formatNumber(BASE_BET)} × {bigSmallMultiplier || 1} × {periods || 1} = NT${formatNumber(calculateBetAmount(bigSmallMultiplier, periods || 1))}/組
                     </p>
                   )}
                   {selectedOddEven.length > 0 && (
                     <p className="text-orange-400">
-                      單雙投注：NT${formatNumber(BASE_BET * betStar)} × {oddEvenMultiplier || 1} × {periods || 1} = NT${formatNumber(calculateBetAmount(betStar, oddEvenMultiplier, periods || 1))}/組
+                      單雙投注：NT${formatNumber(BASE_BET)} × {oddEvenMultiplier || 1} × {periods || 1} = NT${formatNumber(calculateBetAmount(oddEvenMultiplier, periods || 1))}/組
                     </p>
                   )}
                   {calculateEstimatedWinnings() > 0 && (
