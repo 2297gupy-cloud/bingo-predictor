@@ -235,8 +235,8 @@ export default function SimulateTab() {
     <div className="space-y-2 px-2 sm:px-4 py-2">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-black/40 border border-orange-500">
-          <TabsTrigger value="bet" className="text-xs">Bet</TabsTrigger>
-          <TabsTrigger value="results" className="text-xs">Results</TabsTrigger>
+          <TabsTrigger value="bet" className="text-xs">投注</TabsTrigger>
+          <TabsTrigger value="results" className="text-xs">結果</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bet" className="space-y-1.5">
@@ -244,7 +244,7 @@ export default function SimulateTab() {
           <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
             <CardHeader className="py-1">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-xs">Star Level Selection</CardTitle>
+                <CardTitle className="text-xs">星級選擇</CardTitle>
                 <div className="flex gap-1">
                   <Button
                     variant={!hasNewYearBonus ? "default" : "outline"}
@@ -254,7 +254,7 @@ export default function SimulateTab() {
                       !hasNewYearBonus && "bg-orange-500 hover:bg-orange-600 text-white"
                     )}
                   >
-                    Regular
+                    無加碼
                   </Button>
                   <Button
                     variant={hasNewYearBonus ? "default" : "outline"}
@@ -264,11 +264,11 @@ export default function SimulateTab() {
                       hasNewYearBonus && "bg-orange-500 hover:bg-orange-600 text-white"
                     )}
                   >
-                    Festival Bonus
+                    過年加碼
                   </Button>
                 </div>
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">Base bet: NT$25/star | Click star to select and auto-pick numbers</p>
+              <p className="text-xs text-gray-400 mt-0.5">基礎投注: NT$25/星 | 點擊星級選擇並自動選號</p>
             </CardHeader>
             <CardContent className="py-0.5 space-y-1">
               {/* Star selection - 2 rows x 5 columns */}
@@ -307,7 +307,7 @@ export default function SimulateTab() {
 
               {/* Number selection */}
               <div className="space-y-0.5">
-                <p className="text-xs text-gray-400">Select Numbers</p>
+                <p className="text-xs text-gray-400">選擇號碼</p>
                 <div className="grid grid-cols-8 sm:grid-cols-10 gap-0.5">
                   {Array.from({ length: 80 }, (_, i) => i + 1).map(num => (
                     <button
@@ -334,7 +334,7 @@ export default function SimulateTab() {
 
               {/* Big/Small selection */}
               <div className="space-y-0.5">
-                <p className="text-xs text-gray-400">Big/Small</p>
+                <p className="text-xs text-gray-400">大小</p>
                 <div className="flex gap-1">
                   {["big", "small"].map(type => (
                     <button
@@ -353,7 +353,7 @@ export default function SimulateTab() {
                           : "bg-black/20 text-gray-400 border-gray-600 hover:border-blue-400"
                       )}
                     >
-                      {type === "big" ? "Big (41-80)" : "Small (1-40)"}
+                      {type === "big" ? "大(41-80)" : "小(1-40)"}
                     </button>
                   ))}
                 </div>
@@ -361,7 +361,7 @@ export default function SimulateTab() {
 
               {/* Odd/Even selection */}
               <div className="space-y-0.5">
-                <p className="text-xs text-gray-400">Odd/Even</p>
+                <p className="text-xs text-gray-400">單雙</p>
                 <div className="flex gap-1">
                   {["odd", "even"].map(type => (
                     <button
@@ -380,7 +380,7 @@ export default function SimulateTab() {
                           : "bg-black/20 text-gray-400 border-gray-600 hover:border-purple-400"
                       )}
                     >
-                      {type === "odd" ? "Odd" : "Even"}
+                      {type === "odd" ? "單" : "雙"}
                     </button>
                   ))}
                 </div>
@@ -389,7 +389,7 @@ export default function SimulateTab() {
               {/* Multiplier selection */}
               {selectedBigSmall.length > 0 && (
                 <div className="space-y-0.5">
-                  <p className="text-xs text-gray-400">Big/Small Multiplier</p>
+                  <p className="text-xs text-gray-400">大小投注倍數</p>
                   <div className="grid grid-cols-5 gap-0.5">
                     {MULTIPLIERS.map(mult => (
                       <button
@@ -411,7 +411,7 @@ export default function SimulateTab() {
 
               {selectedOddEven.length > 0 && (
                 <div className="space-y-0.5">
-                  <p className="text-xs text-gray-400">Odd/Even Multiplier</p>
+                  <p className="text-xs text-gray-400">單雙投注倍數</p>
                   <div className="grid grid-cols-5 gap-0.5">
                     {MULTIPLIERS.map(mult => (
                       <button
@@ -433,7 +433,7 @@ export default function SimulateTab() {
 
               {/* Period selection */}
               <div className="space-y-0.5">
-                <p className="text-xs text-gray-400">Periods</p>
+                <p className="text-xs text-gray-400">投注期數</p>
                 <div className="grid grid-cols-6 gap-0.5">
                   {PERIODS.map(p => (
                     <button
@@ -467,13 +467,13 @@ export default function SimulateTab() {
           {/* Bet buttons */}
           <div className="flex gap-1">
             <Button onClick={handleAddBet} className="flex-1 text-xs h-7 bg-orange-500 hover:bg-orange-600">
-              Add Bet
+              加入投注
             </Button>
             <Button onClick={handleClearBets} variant="outline" className="flex-1 text-xs h-7">
-              Clear Bets
+              清除投注
             </Button>
             <Button onClick={handleSimulateDraw} className="flex-1 text-xs h-7 bg-green-600 hover:bg-green-700">
-              Simulate Draw
+              模擬開獨
             </Button>
           </div>
 
@@ -481,13 +481,13 @@ export default function SimulateTab() {
           {tickets.length > 0 && (
             <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
               <CardHeader className="py-1">
-                <CardTitle className="text-xs">Bet Records (Max 12)</CardTitle>
+                <CardTitle className="text-xs">投注紀錄 (最多12筆)</CardTitle>
               </CardHeader>
               <CardContent className="py-0.5 space-y-0.5 max-h-40 overflow-y-auto">
                 {tickets.map(ticket => (
                   <div key={ticket.id} className="flex justify-between items-center text-xs bg-black/20 p-1 rounded">
                     <span className="text-gray-300">
-                      {ticket.gameType === "base" ? "Base" : ticket.gameType === "big" ? "Big" : ticket.gameType === "small" ? "Small" : ticket.betType === "odd" ? "Odd" : "Even"}
+                      {ticket.gameType === "base" ? "基礎" : ticket.gameType === "big" ? "大" : ticket.gameType === "small" ? "小" : ticket.betType === "odd" ? "單" : "雙"}
                       {ticket.multiplier && ` x${ticket.multiplier}`}
                       {ticket.periods && ` ${ticket.periods}p`}
                       {" - "}NT${formatNumber(ticket.totalBet)}
@@ -513,7 +513,7 @@ export default function SimulateTab() {
           {tickets.length > 0 && (
             <Card className="border-green-500 bg-black/40">
               <CardHeader className="py-1">
-                <CardTitle className="text-xs">Bet Records</CardTitle>
+                <CardTitle className="text-xs">投注紀錄</CardTitle>
               </CardHeader>
               <CardContent className="py-0.5 space-y-1">
                 {tickets.map(ticket => {
@@ -525,7 +525,7 @@ export default function SimulateTab() {
                     <div key={ticket.id} className="text-xs text-green-400 border border-green-500/30 rounded p-1">
                       <div className="flex justify-between items-start">
                         <div>
-                          <div>{gameTypeLabel} | {ticket.star}star | Numbers: {numbersDisplay}</div>
+                          <div>{gameTypeLabel} | {ticket.star}星 | 號碼: {numbersDisplay}</div>
                           <div>x{ticket.multiplier || 1} {ticket.periods}p - NT${formatNumber(ticket.totalBet)}</div>
                         </div>
                         <div className={ticket.isWinning ? 'text-yellow-400 font-bold' : 'text-red-400'}>
@@ -544,16 +544,16 @@ export default function SimulateTab() {
 
           {/* Display draw results */}
           {results.length === 0 ? (
-            <Card className="border-orange-500 bg-black/40">
+                <Card className="border-orange-500 bg-black/40">
               <CardContent className="py-4 text-center text-xs text-gray-400">
-                Waiting for draw...
+                等待開獨...
               </CardContent>
             </Card>
           ) : (
             results.map(result => (
               <Card key={result.period} className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
                 <CardHeader className="py-1">
-                  <CardTitle className="text-xs">Period {result.period} Draw Result</CardTitle>
+                  <CardTitle className="text-xs">第 {result.period} 期開獨結果</CardTitle>
                 </CardHeader>
                 <CardContent className="py-0.5 space-y-1">
                   <div className="grid grid-cols-10 gap-0.5">
@@ -565,7 +565,7 @@ export default function SimulateTab() {
                   </div>
                   {result.winningTickets.length > 0 && (
                     <div className="text-xs text-green-400">
-                      Winning bets: {result.winningTickets.length}
+                      中獨投注: {result.winningTickets.length}
                     </div>
                   )}
                 </CardContent>
