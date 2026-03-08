@@ -169,6 +169,8 @@ export default function SimulateTab() {
       setBigSmallMultiplier(null);
       setOddEvenMultiplier(null);
       setPeriods(null);
+      // 自動切換到結果標籤
+      setActiveTab('results');
     }
   };
 
@@ -282,20 +284,19 @@ export default function SimulateTab() {
                       }
                     }}
                     className={cn(
-                      "text-xs px-0.5 py-1 rounded border text-center transition-all",
+                      "text-xs px-1 py-1.5 rounded border text-center transition-all font-bold",
                       (selectedStar === star || betStar === star)
                         ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
                         : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
                     )}
                   >
-                    <div className="font-bold">{star}星</div>
-                    <div className="text-xs leading-tight truncate">NT${formatNumber(BASE_BET)}</div>
+                    {star}星
                   </button>
                 ))}
               </div>
 
               {(selectedStar || betStar) && (
-                <p className="text-xs text-orange-400 text-center">
+                <p className="text-xs text-orange-400 text-center mt-1">
                   {selectedStar && `選 ${selectedNumbers.length} 個號碼 · 全中獎金 NT$${formatNumber(hasNewYearBonus ? STAR_PRIZES_BONUS[selectedStar] : STAR_PRIZES[selectedStar])}`}
                   {betStar && ` | 投注星級：${betStar}星`}
                 </p>
