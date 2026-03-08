@@ -44,8 +44,8 @@ export const HOUR_SLOTS = [
 ];
 
 /**
- * Get draws for a specific hour range on a given date.
- * e.g. getHourDraws("2026-03-06", "15") returns draws from 15:00 to 15:55
+ * Get the latest 15 draws starting from the last draw of a specific hour.
+ * e.g. getHourDraws("2026-03-06", "15") returns the last draw of 15:xx and the next 14 draws
  */
 export async function getHourDraws(dateStr: string, hour: string) {
   const db = await getDb();
@@ -54,7 +54,8 @@ export async function getHourDraws(dateStr: string, hour: string) {
   const startTime = `${hour.padStart(2, "0")}:00`;
   const endTime = `${hour.padStart(2, "0")}:55`;
 
-  const draws = await db
+  // Get the last draw of the specified hour
+  const lastHourDraw = await db
     .select()
     .from(bingoDraws)
     .where(
@@ -64,38 +65,66 @@ export async function getHourDraws(dateStr: string, hour: string) {
         lte(bingoDraws.drawTime, endTime)
       )
     )
+    .orderBy(desc(bingoDraws.drawTerm))
+    .limit(1);
+
+  if (lastHourDraw.length === 0) {
+    // No draws yet, return 15 empty slots for the hour
+    const timeSlots = Array.from({ length: 15 }, (_, i) => {
+      const minutes = i * 5;
+      return `${hour.padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    });
+    return timeSlots.map(time => ({
+      term: "",
+      time: time,
+      numbers: [],
+      pending: true,
+    }));
+  }
+
+  // Get the last draw's term and fetch the next 15 draws (including itself)
+  const lastTerm = parseInt(lastHourDraw[0].drawTerm, 10);
+  const startTerm = Math.max(1, lastTerm - 14); // Get 15 draws total
+
+  const draws = await db
+    .select()
+    .from(bingoDraws)
+    .where(
+      and(
+        gte(bingoDraws.drawTerm, String(startTerm).padStart(9, "0")),
+        lte(bingoDraws.drawTerm, String(lastTerm).padStart(9, "0"))
+      )
+    )
     .orderBy(bingoDraws.drawTerm);
 
-  // Generate 15 time slots (every 5 minutes from XX:00 to XX:55)
-  const timeSlots = Array.from({ length: 15 }, (_, i) => {
-    const minutes = i * 5;
-    return `${hour.padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-  });
-
-  // Create a map of existing draws by time
+  // Create a map of existing draws by term
   const drawMap = new Map(
-    draws.map(d => [d.drawTime, d])
+    draws.map(d => [d.drawTerm, d])
   );
 
-  // Return 15 slots with pending flag for unopened draws
-  return timeSlots.map(time => {
-    const draw = drawMap.get(time);
+  // Return 15 draws with pending flag for missing terms
+  const result = [];
+  for (let i = 0; i < 15; i++) {
+    const term = String(startTerm + i).padStart(9, "0");
+    const draw = drawMap.get(term);
     if (draw) {
-      return {
+      result.push({
         term: draw.drawTerm,
         time: draw.drawTime,
         numbers: draw.numbers.split(",").map(Number),
         pending: false,
-      };
+      });
     } else {
-      return {
-        term: "",
-        time: time,
+      result.push({
+        term: term,
+        time: "",
         numbers: [],
         pending: true,
-      };
+      });
     }
-  });
+  }
+
+  return result;
 }
 
 // ============ AI Analysis via Forge API ============
