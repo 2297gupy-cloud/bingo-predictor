@@ -330,31 +330,7 @@ export default function SimulateTab() {
             </CardContent>
           </Card>
 
-          {/* 投注星級選擇 */}
-          <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-            <CardHeader className="py-1">
-              <CardTitle className="text-xs">投注星級</CardTitle>
-              <p className="text-xs text-gray-400 mt-0.5">基本投注：NT$25/顆星</p>
-            </CardHeader>
-            <CardContent className="py-0.5">
-              <div className="grid grid-cols-5 sm:grid-cols-10 gap-0.5">
-                {STARS.map(star => (
-                  <button
-                    key={star}
-                    onClick={() => setBetStar(betStar === star ? null : star)}
-                    className={cn(
-                      "text-xs px-0.5 py-0.5 rounded border text-center transition-all",
-                      betStar === star
-                        ? "bg-green-500 hover:bg-green-600 text-white border-green-600 shadow-lg"
-                        : "bg-black/20 text-gray-300 border-gray-600 hover:border-green-400"
-                    )}
-                  >
-                    {star}星
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* 猜大小 */}
           <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
