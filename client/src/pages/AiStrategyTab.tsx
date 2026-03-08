@@ -114,7 +114,7 @@ function NumberDistributionBlock({
                 </tr>
               </thead>
               <tbody>
-                {displayDraws.map((draw) => {
+                {[...displayDraws].reverse().map((draw) => {
                   const hasDraw = !draw.pending;
                   const isPending = draw.pending ?? false;
                   return (
