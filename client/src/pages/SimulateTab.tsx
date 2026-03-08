@@ -24,10 +24,10 @@ interface DrawResult {
   winningTickets: BetTicket[];
 }
 
-// 投注倍數：2x, 3x, 4x, 5x, 6x, 8x, 10x, 12x, 20x, 50x
-const MULTIPLIERS = [2, 3, 4, 5, 6, 8, 10, 12, 20, 50];
-// 投注期數：2, 3, 4, 5, 6, 7, 8, 9, 10, 12
-const PERIODS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
+// 投注倍數：1x, 2x, 3x, 4x, 5x, 6x, 8x, 10x, 12x, 20x, 50x
+const MULTIPLIERS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 20, 50];
+// 投注期數：1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12
+const PERIODS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
 const NUMBERS = Array.from({ length: 80 }, (_, i) => i + 1);
 
 // 獎金表 (標準獎金)
@@ -69,8 +69,8 @@ export default function SimulateTab() {
   const [gameType, setGameType] = useState<"big" | "small" | "select" | "oddeven" | "superball">("select");
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [oddEvenType, setOddEvenType] = useState<"odd" | "even">("odd");
-  const [multiplier, setMultiplier] = useState(2);
-  const [periods, setPeriods] = useState(2);
+  const [multiplier, setMultiplier] = useState(1);
+  const [periods, setPeriods] = useState(1);
   const [groups, setGroups] = useState(1);
   const [tickets, setTickets] = useState<BetTicket[]>([]);
   const [results, setResults] = useState<DrawResult[]>([]);
@@ -457,7 +457,7 @@ export default function SimulateTab() {
                 </div>
                 <div className="flex gap-1 items-center justify-center">
                   <Button
-                    onClick={() => setPeriods(Math.max(2, periods - 1))}
+                    onClick={() => setPeriods(Math.max(1, periods - 1))}
                     size="sm"
                     variant="outline"
                     className="text-xs px-2 hover:bg-orange-500/20 hover:border-orange-500"
