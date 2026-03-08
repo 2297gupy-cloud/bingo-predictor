@@ -497,33 +497,32 @@ export default function SimulateTab() {
           </Card>
 
           {/* 投注金額明細 */}
-          <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-            <CardContent className="py-0.5 space-y-0.5">
-              <div className="text-xs">
-                <p className="text-gray-400">基礎投注：NT${BASE_BET}/顆星</p>
-                {betStar && (
+          {betStar && (
+            <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
+              <CardContent className="py-0.5 space-y-0.5">
+                <div className="text-xs">
                   <p className="text-orange-400">
                     選擇投注：{betStar}星 × NT${BASE_BET} = NT${formatNumber(BASE_BET * betStar)}/組
                   </p>
-                )}
-                {betStar && bigSmallMultiplier && periods && (
-                  <p className="text-orange-400">
-                    大小投注：NT${formatNumber(BASE_BET * betStar)} × {bigSmallMultiplier} × {periods} = NT${formatNumber(calculateBetAmount(betStar, bigSmallMultiplier, periods))}/組
-                  </p>
-                )}
-                {betStar && oddEvenMultiplier && periods && (
-                  <p className="text-orange-400">
-                    單雙投注：NT${formatNumber(BASE_BET * betStar)} × {oddEvenMultiplier} × {periods} = NT${formatNumber(calculateBetAmount(betStar, oddEvenMultiplier, periods))}/組
-                  </p>
-                )}
-                {calculateEstimatedWinnings() > 0 && (
-                  <p className="text-green-400 font-bold">
-                    預估獎金：NT${formatNumber(calculateEstimatedWinnings())}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  {bigSmallMultiplier && periods && (
+                    <p className="text-orange-400">
+                      大小投注：NT${formatNumber(BASE_BET * betStar)} × {bigSmallMultiplier} × {periods} = NT${formatNumber(calculateBetAmount(betStar, bigSmallMultiplier, periods))}/組
+                    </p>
+                  )}
+                  {oddEvenMultiplier && periods && (
+                    <p className="text-orange-400">
+                      單雙投注：NT${formatNumber(BASE_BET * betStar)} × {oddEvenMultiplier} × {periods} = NT${formatNumber(calculateBetAmount(betStar, oddEvenMultiplier, periods))}/組
+                    </p>
+                  )}
+                  {calculateEstimatedWinnings() > 0 && (
+                    <p className="text-green-400 font-bold">
+                      預估獎金：NT${formatNumber(calculateEstimatedWinnings())}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* 投注按鈕 */}
           <div className="flex gap-1">
