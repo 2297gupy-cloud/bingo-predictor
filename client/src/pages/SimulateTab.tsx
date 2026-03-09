@@ -89,6 +89,8 @@ export default function SimulateTab() {
   const [results, setResults] = useState<DrawResult[]>([]);
   const [activeTab, setActiveTab] = useState("bet");
   const [hasNewYearBonus, setHasNewYearBonus] = useState(false);
+  // Current lottery period
+  const [currentLotteryPeriod] = useState<number>(1156);
   
   // Countdown timer state
   const [countdownTime, setCountdownTime] = useState(300); // 5 minutes in seconds
@@ -586,7 +588,7 @@ export default function SimulateTab() {
                               ? 'bg-green-500/30 text-green-400' 
                               : 'bg-gray-500/30 text-gray-400'
                           }`}>
-                            第 {ticket.periods} 期
+                            第 {currentLotteryPeriod} 期
                           </div>
                         </div>
                         <div className={isDrawn ? 'text-gray-300' : 'text-gray-500'}>
