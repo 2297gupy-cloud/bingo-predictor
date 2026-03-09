@@ -544,14 +544,14 @@ export default function SimulateTab() {
           )}
         </TabsContent>
 
-        <TabsContent value="results" className="space-y-1.5">
-          <div className="space-y-1.5">
+        <TabsContent value="results" className="space-y-0.5">
+          <div className="space-y-0.5">
             {/* Countdown timer */}
             <Card className="border-blue-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(59, 130, 246, 0.6)" }}>
-              <CardHeader className="py-1">
+              <CardHeader className="py-0.5">
                 <CardTitle className="text-xs">驗證倒計時</CardTitle>
               </CardHeader>
-              <CardContent className="py-2 text-center">
+              <CardContent className="py-1 text-center">
                 <div className="text-2xl font-bold text-blue-400">{formatCountdown(countdownTime)}</div>
                 <div className="text-xs text-gray-400 mt-1">驗證最新即時數據</div>
               </CardContent>
@@ -560,16 +560,16 @@ export default function SimulateTab() {
             {/* Order list */}
             {tickets.length === 0 ? (
               <Card className="border-green-500 bg-black/40">
-                <CardContent className="py-4 text-center text-xs text-gray-400">
+                <CardContent className="py-2 text-center text-xs text-gray-400">
                   沒有投注紀錄
                 </CardContent>
               </Card>
             ) : (
               <Card className="border-green-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(34, 197, 94, 0.6)" }}>
-                <CardHeader className="py-1">
+                <CardHeader className="py-0.5">
                   <CardTitle className="text-xs">訂單列表</CardTitle>
                 </CardHeader>
-                <CardContent className="py-0.5 space-y-1 max-h-96 overflow-y-auto">
+                <CardContent className="py-0.5 space-y-0.5 max-h-96 overflow-y-auto">
                   {tickets.map(ticket => {
                     const gameTypeLabel = ticket.gameType === 'base' ? '基础' : ticket.gameType === 'big' ? '大' : ticket.gameType === 'small' ? '小' : ticket.betType === 'odd' ? '單' : '雙';
                     const winStatus = ticket.isWinning === null ? '等待' : ticket.isWinning ? '中' : '未中';
@@ -597,10 +597,10 @@ export default function SimulateTab() {
             {/* Draw results (未開獎 and 已開獎) */}
             {/* Pending draws */}
             <Card className="border-yellow-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(234, 179, 8, 0.6)" }}>
-              <CardHeader className="py-1">
+              <CardHeader className="py-0.5">
                 <CardTitle className="text-xs">未開獎</CardTitle>
               </CardHeader>
-              <CardContent className="py-1 space-y-1 max-h-48 overflow-y-auto">
+              <CardContent className="py-0.5 space-y-0.5 max-h-48 overflow-y-auto">
                 {tickets.filter(t => t.isWinning === null).length === 0 ? (
                   <div className="text-xs text-gray-400 text-center py-2">沒有未開獎訂單</div>
                 ) : (
@@ -621,10 +621,10 @@ export default function SimulateTab() {
 
             {/* Draw results */}
             <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-              <CardHeader className="py-1">
+              <CardHeader className="py-0.5">
                 <CardTitle className="text-xs">已開獎</CardTitle>
               </CardHeader>
-              <CardContent className="py-1 space-y-1 max-h-48 overflow-y-auto">
+              <CardContent className="py-0.5 space-y-0.5 max-h-48 overflow-y-auto">
                 {results.length === 0 ? (
                   <div className="text-xs text-gray-400 text-center py-2">等待開獎...</div>
                 ) : (
