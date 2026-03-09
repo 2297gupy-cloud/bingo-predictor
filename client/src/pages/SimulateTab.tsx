@@ -111,8 +111,32 @@ export default function SimulateTab() {
   });
   const [activeTab, setActiveTab] = useState("bet");
   const [hasNewYearBonus, setHasNewYearBonus] = useState(false);
-  // Current lottery period
-  const [currentLotteryPeriod] = useState<number>(1156);
+  // Current lottery period - Extract from page header
+  const [currentLotteryPeriod, setCurrentLotteryPeriod] = useState<number>(() => {
+    // Try to extract from page header
+    const headerText = document.body.innerText;
+    const match = headerText.match(/(\d{4})\s*期/);
+    return match ? parseInt(match[1]) : 1156; // Default to 1156 if not found
+  });
+  
+  // Update current lottery period when component mounts or when tab changes
+  useEffect(() => {
+    const updatePeriod = () => {
+      const headerText = document.body.innerText;
+      const match = headerText.match(/(\d{4})\s*期/);
+      if (match) {
+        const newPeriod = parseInt(match[1]);
+        setCurrentLotteryPeriod(newPeriod);
+      }
+    };
+    
+    // Update immediately
+    updatePeriod();
+    
+    // Update every 5 seconds to catch changes
+    const interval = setInterval(updatePeriod, 5000);
+    return () => clearInterval(interval);
+  }, []);
   
   // Countdown timer state
   const [countdownTime, setCountdownTime] = useState(300); // 5 minutes in seconds
