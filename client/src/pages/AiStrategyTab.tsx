@@ -683,7 +683,7 @@ export default function AiStrategyTab() {
               size="sm"
               onClick={() => handleAiAnalyze(effectiveSlot)}
               disabled={aiAnalyze.isPending}
-              className="h-5 gap-0.5 border-amber-500/30 text-[10px] px-1.5 hover:bg-amber-500/10 animate-pulse hover:animate-none"
+              className="h-5 gap-0.5 border-2 border-amber-500 text-[10px] px-1.5 hover:bg-amber-500/10 animate-border-pulse hover:animate-none"
             >
               {aiAnalyze.isPending ? (
                 <Loader2 className="h-2.5 w-2.5 animate-spin" />
@@ -714,7 +714,7 @@ export default function AiStrategyTab() {
                       }
                     }
                   }}
-                  className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border border-amber-500/20 hover:border-amber-500/50 transition-all cursor-pointer animate-pulse hover:animate-none"
+                  className="inline-flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-secondary/30 border-2 border-amber-500 hover:border-amber-500/50 transition-all cursor-pointer animate-border-pulse hover:animate-none"
                 >
                   {currentPrediction.goldenBalls.map((num: number, idx: number) => (
                     <GoldenBall key={idx} number={num} size="lg" />

@@ -266,3 +266,14 @@
 - [x] 修改「AI手動計算」按鈕為連結 - 指向 https://gemini.google.com/app/a35bb8c4886f6949
 - [x] 設定在新標籤打開 - target="_blank"
 - [x] 測試按鈕功能 - 成功打開 Gemini 網站
+
+## AI 分析按鈕外框閃爍效果 (2026-03-09)
+
+- [x] 添加外框閃爍動畫 - 在 index.css 中定義 border-pulse 動畫
+- [x] 修改 AI 分析按鈕樣式 - 使用 border-2 border-amber-500 和 animate-border-pulse
+- [x] 測試閃爍效果 - 外框在亮暗之間循環閃爍，非常容易被識別
+
+## 黃金球按鈕外框閃爍效果 (2026-03-09)
+
+- [x] 為黃金球按鈕添加外框閃爍效果 - 使用 border-2 border-amber-500 和 animate-border-pulse
+- [x] 測試閃爍效果 - 外框在亮暗之間循環閃爍，非常容易被識別
