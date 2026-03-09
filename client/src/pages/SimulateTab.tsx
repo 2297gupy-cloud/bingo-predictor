@@ -685,8 +685,8 @@ export default function SimulateTab() {
                 {results.length === 0 ? (
                   <div className="text-xs text-gray-400 text-center py-2">等待開獎...</div>
                 ) : (
-                  results.map(result => (
-                    <div key={result.period} className="border border-orange-500/30 rounded p-1 bg-orange-500/5">
+                  results.map((result, idx) => (
+                    <div key={`result-${result.period}-${idx}`} className="border border-orange-500/30 rounded p-1 bg-orange-500/5">
                       <div className="text-xs font-bold text-orange-400 mb-1">第 {result.period} 期</div>
                       <div className="grid grid-cols-10 gap-0.5">
                         {result.drawNumbers.map((num, idx) => (
