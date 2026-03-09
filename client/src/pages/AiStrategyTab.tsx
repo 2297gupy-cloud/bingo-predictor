@@ -680,15 +680,15 @@ export default function AiStrategyTab() {
             </div>
             <Button
               variant="outline"
-              size="sm"
+              size="lg"
               onClick={() => handleAiAnalyze(effectiveSlot)}
               disabled={aiAnalyze.isPending}
-              className="h-5 gap-0.5 border-2 border-amber-500 text-[10px] px-1.5 hover:bg-amber-500/10 animate-border-pulse hover:animate-none"
+              className="gap-1.5 border-2 border-amber-500 text-sm px-3 py-2 hover:bg-amber-500/10 animate-border-pulse hover:animate-none font-semibold"
             >
               {aiAnalyze.isPending ? (
-                <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Brain className="h-2.5 w-2.5" />
+                <Brain className="h-4 w-4" />
               )}
               AI分析
             </Button>

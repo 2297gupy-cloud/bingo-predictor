@@ -277,3 +277,11 @@
 
 - [x] 為黃金球按鈕添加外框閃爍效果 - 使用 border-2 border-amber-500 和 animate-border-pulse
 - [x] 測試閃爍效果 - 外框在亮暗之間循環閃爍，非常容易被識別
+
+## AI 分析按鈕放大並添加閃爍效果 (2026-03-09)
+
+- [x] 將 AI 分析按鈕從 size="sm" 改為 size="lg" - 按鈕尺寸明顯增大
+- [x] 增大文字和圖標尺寸 - text-sm 和 h-4 w-4
+- [x] 添加 font-semibold 使文字更醒目
+- [x] 保持外框閃爍效果 - border-2 border-amber-500 和 animate-border-pulse
+- [x] 測試效果 - 按鈕現在非常明顯，用戶可以輕鬆看到並點擊
