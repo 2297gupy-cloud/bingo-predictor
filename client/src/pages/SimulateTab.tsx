@@ -92,9 +92,23 @@ export default function SimulateTab() {
   // Bet star
   const [betStar, setBetStar] = useState<number | null>(null);
   
-  // Bet records
-  const [tickets, setTickets] = useState<BetTicket[]>([]);
-  const [results, setResults] = useState<DrawResult[]>([]);
+  // Bet records - Load from localStorage
+  const [tickets, setTickets] = useState<BetTicket[]>(() => {
+    try {
+      const saved = localStorage.getItem('bingo-tickets');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [results, setResults] = useState<DrawResult[]>(() => {
+    try {
+      const saved = localStorage.getItem('bingo-results');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [activeTab, setActiveTab] = useState("bet");
   const [hasNewYearBonus, setHasNewYearBonus] = useState(false);
   // Current lottery period
@@ -104,6 +118,16 @@ export default function SimulateTab() {
   const [countdownTime, setCountdownTime] = useState(300); // 5 minutes in seconds
   const [isCountingDown, setIsCountingDown] = useState(false);
   
+  // Save tickets to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('bingo-tickets', JSON.stringify(tickets));
+  }, [tickets]);
+
+  // Save results to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('bingo-results', JSON.stringify(results));
+  }, [results]);
+
   // Countdown timer effect
   useEffect(() => {
     if (!isCountingDown || countdownTime <= 0) return;
