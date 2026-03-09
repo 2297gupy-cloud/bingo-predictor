@@ -552,13 +552,15 @@ export default function AiStrategyTab() {
               {predictions?.length || 0} 個已分析
             </span>
             <div className="ml-auto flex items-center gap-1">
-                <button
-                  onClick={() => setShowAiCalculator(!showAiCalculator)}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 transition-colors shrink-0"
+                <a
+                  href="https://gemini.google.com/app/a35bb8c4886f6949"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 transition-colors shrink-0 no-underline"
                 >
                   <Brain className="h-3 w-3" />
-                  <span>{showAiCalculator ? '隱藏計算' : 'AI手動計算'}</span>
-                </button>
+                  <span>AI手動計算</span>
+                </a>
                 <button
                   onClick={async () => {
                     if (!window.confirm(`確定清除 ${dateStr} 所有時段的球號和框架？此操作無法撤銷。`)) return;
