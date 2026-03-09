@@ -439,6 +439,8 @@ export default function AiStrategyTab() {
   // Manual input state
   const [manualText, setManualText] = useState("");
   const [parsedBalls, setParsedBalls] = useState<number[]>([]);
+  // AI 計算面板狀態
+  const [showAiCalculator, setShowAiCalculator] = useState(false);
 
   const currentSlot = slotsData?.currentSlot;
   const slots = slotsData?.slots || [];
@@ -552,24 +554,29 @@ export default function AiStrategyTab() {
             {predictions && predictions.length > 0 && (
               <div className="ml-auto flex items-center gap-1">
                 <button
-                  onClick={() => {
-                    window.open('https://gemini.google.com/app/a35bb8c4886f6949', '_blank');
-                  }}
+                  onClick={() => setShowAiCalculator(!showAiCalculator)}
                   className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 transition-colors shrink-0"
                 >
                   <Brain className="h-3 w-3" />
-                  <span>AI手動計算</span>
+                  <span>{showAiCalculator ? '隱藏計算' : 'AI手動計算'}</span>
                 </button>
                 <button
                   onClick={async () => {
-                    if (!window.confirm(`確定清除 ${dateStr} 所有時段的球號？`)) return;
+                    if (!window.confirm(`確定清除 ${dateStr} 所有時段的球號和框架？此操作無法撤銷。`)) return;
                     try {
-                      await Promise.all(
-                        predictions.map(pred =>
-                          aiDeletePrediction.mutateAsync({ date: dateStr, sourceHour: pred.sourceHour })
-                        )
-                      );
-                      toast.success(`已清除所有時段球號`);
+                      if (predictions && predictions.length > 0) {
+                        await Promise.all(
+                          predictions.map(pred =>
+                            aiDeletePrediction.mutateAsync({ date: dateStr, sourceHour: pred.sourceHour })
+                          )
+                        );
+                      }
+                      setManualText("");
+                      setParsedBalls([]);
+                      setShowAiCalculator(false);
+                      setSelectedSlot(null);
+                      setVerifySlot(null);
+                      toast.success(`已清除所有時段球號和框架`);
                     } catch (err: any) {
                       toast.error(`清除失敗：${err.message}`);
                     }
@@ -617,6 +624,44 @@ export default function AiStrategyTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Calculator Panel */}
+      {showAiCalculator && (
+        <Card className="neon-border bg-card border-amber-500/30">
+          <CardContent className="pt-2.5 sm:pt-3 pb-2 sm:pb-2.5">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Brain className="h-3.5 w-3.5 text-amber-400" />
+              <span className="text-xs font-medium text-foreground">AI 手動計算</span>
+              <span className="text-[10px] text-muted-foreground ml-auto">輸入 12 期數據計算三顆球</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground/60 mb-2">
+              輸入 12 期開獎號碼（每期 20 個號碼），系統自動分析最常出現的三顆球
+            </p>
+            <div className="space-y-2">
+              <textarea
+                placeholder="輸入 12 期開獎號碼，格式:\n期 1: 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20\n期 2: ...\n（每期 20 個號碼，用空格分隔）"
+                className="w-full h-24 text-xs font-mono-num p-2 rounded bg-secondary/30 border border-border/20 text-foreground placeholder:text-muted-foreground/40"
+              />
+              <div className="flex gap-1">
+                <button
+                  onClick={() => {
+                    toast.info('計算功能開發中...');
+                  }}
+                  className="flex-1 h-7 text-[10px] rounded bg-amber-500 hover:bg-amber-600 text-black font-medium transition-colors"
+                >
+                  計算三顆球
+                </button>
+                <button
+                  onClick={() => setShowAiCalculator(false)}
+                  className="flex-1 h-7 text-[10px] rounded bg-secondary/50 hover:bg-secondary/70 text-foreground transition-colors"
+                >
+                  關閉
+                </button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Selected Slot Detail — AI Analysis / Golden Balls */}
       <Card className="neon-border bg-card">
