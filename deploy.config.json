@@ -1,0 +1,158 @@
+{
+  "app": {
+    "name": "賓果預測器",
+    "version": "1.0.0",
+    "description": "共享數據庫版本 - 所有用戶共享同一份投注記錄和開獎結果",
+    "repository": "https://github.com/2297gupy-cloud/bingo-predictor.git"
+  },
+  "deployment": {
+    "type": "shared-database",
+    "platform": "manus",
+    "template": "web-db-user",
+    "autoSetup": true
+  },
+  "database": {
+    "type": "mysql",
+    "shared": true,
+    "description": "中央共享數據庫 - 所有應用實例連接到同一個數據庫",
+    "connectionString": "REPLACE_WITH_YOUR_DATABASE_URL",
+    "migrations": [
+      "drizzle/migrations"
+    ]
+  },
+  "environment": {
+    "required": [
+      {
+        "key": "DATABASE_URL",
+        "description": "數據庫連接字符串",
+        "example": "mysql://user:password@host:3306/bingo",
+        "source": "original-account"
+      },
+      {
+        "key": "VITE_APP_TITLE",
+        "description": "應用標題",
+        "example": "賓果預測器",
+        "default": "賓果預測器"
+      },
+      {
+        "key": "VITE_APP_LOGO",
+        "description": "應用 Logo URL",
+        "example": "https://...",
+        "optional": true
+      }
+    ],
+    "auto": [
+      "JWT_SECRET",
+      "VITE_APP_ID",
+      "OAUTH_SERVER_URL",
+      "VITE_OAUTH_PORTAL_URL",
+      "BUILT_IN_FORGE_API_URL",
+      "BUILT_IN_FORGE_API_KEY",
+      "VITE_FRONTEND_FORGE_API_KEY",
+      "VITE_FRONTEND_FORGE_API_URL",
+      "VITE_ANALYTICS_ENDPOINT",
+      "VITE_ANALYTICS_WEBSITE_ID"
+    ]
+  },
+  "scripts": {
+    "install": "pnpm install",
+    "dev": "pnpm dev",
+    "build": "pnpm build",
+    "db:push": "pnpm db:push",
+    "test": "pnpm test"
+  },
+  "features": {
+    "authentication": true,
+    "database": true,
+    "api": true,
+    "realtime": false,
+    "storage": false
+  },
+  "pages": {
+    "home": "/",
+    "simulate": "/simulate",
+    "results": "/results"
+  },
+  "dataSharing": {
+    "enabled": true,
+    "type": "central-database",
+    "description": "所有用戶共享同一個中央數據庫",
+    "tables": [
+      {
+        "name": "tickets",
+        "description": "投注記錄",
+        "shared": true
+      },
+      {
+        "name": "results",
+        "description": "開獎結果",
+        "shared": true
+      }
+    ]
+  },
+  "quickStart": {
+    "steps": [
+      {
+        "step": 1,
+        "title": "檢查前置條件",
+        "command": "node --version && pnpm --version"
+      },
+      {
+        "step": 2,
+        "title": "克隆代碼",
+        "command": "git clone https://github.com/2297gupy-cloud/bingo-predictor.git && cd bingo-predictor"
+      },
+      {
+        "step": 3,
+        "title": "安裝依賴",
+        "command": "pnpm install"
+      },
+      {
+        "step": 4,
+        "title": "配置數據庫連接",
+        "description": "設置 DATABASE_URL 環境變數為中央數據庫連接字符串"
+      },
+      {
+        "step": 5,
+        "title": "同步數據庫",
+        "command": "pnpm db:push"
+      },
+      {
+        "step": 6,
+        "title": "啟動應用",
+        "command": "pnpm dev"
+      }
+    ]
+  },
+  "troubleshooting": {
+    "database-connection-failed": {
+      "description": "無法連接到數據庫",
+      "solutions": [
+        "檢查 DATABASE_URL 是否正確",
+        "確保數據庫伺服器正在運行",
+        "檢查網絡連接",
+        "驗證用戶名和密碼"
+      ]
+    },
+    "port-already-in-use": {
+      "description": "端口已被佔用",
+      "solutions": [
+        "更改端口號：PORT=3001 pnpm dev",
+        "殺死佔用該端口的進程"
+      ]
+    },
+    "dependencies-installation-failed": {
+      "description": "依賴安裝失敗",
+      "solutions": [
+        "清除 pnpm 緩存：pnpm store prune",
+        "刪除 node_modules：rm -rf node_modules",
+        "重新安裝：pnpm install"
+      ]
+    }
+  },
+  "support": {
+    "documentation": "SHARED_DATABASE_SETUP.md",
+    "repository": "https://github.com/2297gupy-cloud/bingo-predictor",
+    "issues": "https://github.com/2297gupy-cloud/bingo-predictor/issues"
+  }
+}
