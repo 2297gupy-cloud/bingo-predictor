@@ -565,17 +565,41 @@ export default function SimulateTab() {
                   {tickets.map(ticket => {
                     const gameTypeLabel = ticket.gameType === 'base' ? '基础' : ticket.gameType === 'big' ? '大' : ticket.gameType === 'small' ? '小' : ticket.betType === 'odd' ? '單' : '雙';
                     const winStatus = ticket.isWinning === null ? '等待' : ticket.isWinning ? '中' : '未中';
+                    const isDrawn = ticket.isWinning !== null;
                     return (
-                      <div key={ticket.id} className="text-xs border border-green-500/30 rounded p-1 bg-green-500/5">
-                        <div className="font-bold text-green-400">{gameTypeLabel} | {ticket.star}星</div>
-                        <div className="text-gray-300">號: {ticket.selectedNumbers && ticket.selectedNumbers.length > 0 ? ticket.selectedNumbers.join(',') : '無'}</div>
+                      <div key={ticket.id} className={`text-xs border rounded p-1 ${
+                        isDrawn 
+                          ? 'border-green-500/30 bg-green-500/5' 
+                          : 'border-gray-500/30 bg-gray-500/5'
+                      }`}>
+                        <div className="flex justify-between items-center">
+                          <div className={`font-bold ${
+                            isDrawn ? 'text-green-400' : 'text-gray-400'
+                          }`}>{gameTypeLabel} | {ticket.star}星</div>
+                          <div className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                            isDrawn 
+                              ? 'bg-green-500/30 text-green-400' 
+                              : 'bg-gray-500/30 text-gray-400'
+                          }`}>
+                            第 {ticket.periods} 期
+                          </div>
+                        </div>
+                        <div className={isDrawn ? 'text-gray-300' : 'text-gray-500'}>
+                          號: {ticket.selectedNumbers && ticket.selectedNumbers.length > 0 ? ticket.selectedNumbers.join(',') : '無'}
+                        </div>
                         <div className="flex justify-between items-center mt-1">
-                          <span className="text-gray-400">x{ticket.multiplier || 1} {ticket.periods}p</span>
+                          <span className={isDrawn ? 'text-gray-400' : 'text-gray-500'}>
+                            x{ticket.multiplier || 1} {ticket.periods}p
+                          </span>
                           <span className={ticket.isWinning ? 'text-yellow-400 font-bold' : ticket.isWinning === false ? 'text-red-400' : 'text-gray-400'}>
                             {winStatus}
                           </span>
                         </div>
-                        <div className="text-orange-400 font-bold mt-1">NT${formatNumber(ticket.totalBet)}</div>
+                        <div className={`font-bold mt-1 ${
+                          isDrawn ? 'text-orange-400' : 'text-gray-500'
+                        }`}>
+                          NT${formatNumber(ticket.totalBet)}
+                        </div>
                       </div>
                     );
                   })}
