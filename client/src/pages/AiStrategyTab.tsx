@@ -551,8 +551,7 @@ export default function AiStrategyTab() {
             <span className="text-[10px] text-muted-foreground">
               {predictions?.length || 0} 個已分析
             </span>
-            {predictions && predictions.length > 0 && (
-              <div className="ml-auto flex items-center gap-1">
+            <div className="ml-auto flex items-center gap-1">
                 <button
                   onClick={() => setShowAiCalculator(!showAiCalculator)}
                   className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 transition-colors shrink-0"
@@ -587,7 +586,6 @@ export default function AiStrategyTab() {
                   <span>清除全部</span>
                 </button>
               </div>
-            )}
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-1">
             {slots.map(slot => {
