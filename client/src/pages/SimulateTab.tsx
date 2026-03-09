@@ -546,17 +546,6 @@ export default function SimulateTab() {
 
         <TabsContent value="results" className="space-y-0.5">
           <div className="space-y-0.5">
-            {/* Countdown timer */}
-            <Card className="border-blue-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(59, 130, 246, 0.6)" }}>
-              <CardHeader className="py-0.5">
-                <CardTitle className="text-xs">驗證倒計時</CardTitle>
-              </CardHeader>
-              <CardContent className="py-1 text-center">
-                <div className="text-2xl font-bold text-blue-400">{formatCountdown(countdownTime)}</div>
-                <div className="text-xs text-gray-400 mt-1">驗證最新即時數據</div>
-              </CardContent>
-            </Card>
-
             {/* Order list */}
             {tickets.length === 0 ? (
               <Card className="border-green-500 bg-black/40">
@@ -566,8 +555,11 @@ export default function SimulateTab() {
               </Card>
             ) : (
               <Card className="border-green-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(34, 197, 94, 0.6)" }}>
-                <CardHeader className="py-0.5">
+                <CardHeader className="py-0.5 flex justify-between items-center">
                   <CardTitle className="text-xs">訂單列表</CardTitle>
+                  <div className="text-xs text-blue-400 font-bold bg-blue-500/20 px-2 py-1 rounded border border-blue-500/50">
+                    {formatCountdown(countdownTime)}
+                  </div>
                 </CardHeader>
                 <CardContent className="py-0.5 space-y-0.5 max-h-96 overflow-y-auto">
                   {tickets.map(ticket => {
