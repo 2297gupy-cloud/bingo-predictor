@@ -15,6 +15,9 @@ interface BetTicket {
   periods: number | null;
   totalBet: number;
   selectedNumbers: number[];
+  startPeriod: number; // 開始期數
+  endPeriod: number; // 結束期數（開始期数 + 12）
+  winningPeriods?: number[]; // 中獎的期數清單
   isWinning?: boolean;
   winningAmount?: number;
 }
@@ -23,6 +26,11 @@ interface DrawResult {
   period: number;
   drawNumbers: number[];
   winningTickets: BetTicket[];
+}
+
+interface PeriodResult {
+  period: number;
+  drawNumbers: number[];
 }
 
 // Multipliers: 2x, 3x, 4x, 5x, 6x, 8x, 10x, 12x, 20x, 50x
@@ -156,6 +164,10 @@ export default function SimulateTab() {
     const newTickets: BetTicket[] = [];
     let ticketId = tickets.length > 0 ? Math.max(...tickets.map(t => t.id)) + 1 : 1;
 
+    // Calculate start and end period (12 consecutive periods)
+    const startPeriod = currentLotteryPeriod;
+    const endPeriod = currentLotteryPeriod + 11; // 12 periods total
+
     // Add big/small bets
     selectedBigSmall.forEach(type => {
       newTickets.push({
@@ -167,6 +179,9 @@ export default function SimulateTab() {
         periods: periods || 1,
         totalBet: calculateBetAmount(selectedMultiplier, periods),
         selectedNumbers: selectedNumbers,
+        startPeriod,
+        endPeriod,
+        winningPeriods: [],
       });
     });
 
@@ -181,6 +196,9 @@ export default function SimulateTab() {
         periods: periods || 1,
         totalBet: calculateBetAmount(selectedMultiplier, periods),
         selectedNumbers: selectedNumbers,
+        startPeriod,
+        endPeriod,
+        winningPeriods: [],
       });
     });
 
@@ -195,37 +213,53 @@ export default function SimulateTab() {
         periods: periods || 1,
         totalBet: calculateBetAmount(selectedMultiplier, periods),
         selectedNumbers: selectedNumbers,
+        startPeriod,
+        endPeriod,
+        winningPeriods: [],
       });
     }
 
     if (newTickets.length > 0) {
-      setTickets([...tickets, ...newTickets]);
+      // Create 12 draw results for consecutive periods
+      const newResults: DrawResult[] = [];
+      const updatedTickets = newTickets.map(ticket => ({ ...ticket, winningPeriods: [] as number[] }));
       
-      // 自動為新投注創建開獎結果
-      const drawNumbers = Array.from({ length: 20 }, () => Math.floor(Math.random() * 80) + 1);
-      const bigCount = drawNumbers.filter(n => n >= 41).length;
-      const smallCount = drawNumbers.filter(n => n <= 40).length;
-      const oddCount = drawNumbers.filter(n => n % 2 === 1).length;
-      const evenCount = drawNumbers.filter(n => n % 2 === 0).length;
+      for (let period = startPeriod; period <= endPeriod; period++) {
+        const drawNumbers = Array.from({ length: 20 }, () => Math.floor(Math.random() * 80) + 1);
+        const bigCount = drawNumbers.filter(n => n >= 41).length;
+        const smallCount = drawNumbers.filter(n => n <= 40).length;
+        const oddCount = drawNumbers.filter(n => n % 2 === 1).length;
+        const evenCount = drawNumbers.filter(n => n % 2 === 0).length;
 
-      const winningTickets = newTickets.filter(ticket => {
-        if (ticket.gameType === "big") return bigCount >= 13;
-        if (ticket.gameType === "small") return smallCount >= 13;
-        if (ticket.gameType === "oddeven") {
-          if (ticket.betType === "odd") return oddCount >= 13;
-          if (ticket.betType === "even") return evenCount >= 13;
-        }
-        if (ticket.gameType === "base") return true;
-        return false;
-      });
+        const winningTickets = updatedTickets.filter(ticket => {
+          if (ticket.gameType === "big") return bigCount >= 13;
+          if (ticket.gameType === "small") return smallCount >= 13;
+          if (ticket.gameType === "oddeven") {
+            if (ticket.betType === "odd") return oddCount >= 13;
+            if (ticket.betType === "even") return evenCount >= 13;
+          }
+          if (ticket.gameType === "base") return true;
+          return false;
+        });
 
-      const newResult: DrawResult = {
-        period: results.length + 1,
-        drawNumbers,
-        winningTickets,
-      };
+        // Update winning periods for tickets
+        winningTickets.forEach(winningTicket => {
+          const ticketIndex = updatedTickets.findIndex(t => t.id === winningTicket.id);
+          if (ticketIndex !== -1 && updatedTickets[ticketIndex].winningPeriods) {
+            updatedTickets[ticketIndex].winningPeriods!.push(period);
+          }
+        });
 
-      setResults([newResult, ...results.slice(0, 11)]);
+        newResults.push({
+          period,
+          drawNumbers,
+          winningTickets,
+        });
+      }
+
+      // Update tickets with winning periods
+      setTickets([...tickets, ...updatedTickets]);
+      setResults([...newResults, ...results.slice(0, 11)]);
       
       // Clear selections
       setSelectedBigSmall([]);

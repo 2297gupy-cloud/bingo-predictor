@@ -1,0 +1,50 @@
+    if (newTickets.length > 0) {
+      // Create 12 draw results for consecutive periods
+      const newResults: DrawResult[] = [];
+      const updatedTickets = newTickets.map(ticket => ({ ...ticket, winningPeriods: [] as number[] }));
+      
+      for (let period = startPeriod; period <= endPeriod; period++) {
+        const drawNumbers = Array.from({ length: 20 }, () => Math.floor(Math.random() * 80) + 1);
+        const bigCount = drawNumbers.filter(n => n >= 41).length;
+        const smallCount = drawNumbers.filter(n => n <= 40).length;
+        const oddCount = drawNumbers.filter(n => n % 2 === 1).length;
+        const evenCount = drawNumbers.filter(n => n % 2 === 0).length;
+
+        const winningTickets = updatedTickets.filter(ticket => {
+          if (ticket.gameType === "big") return bigCount >= 13;
+          if (ticket.gameType === "small") return smallCount >= 13;
+          if (ticket.gameType === "oddeven") {
+            if (ticket.betType === "odd") return oddCount >= 13;
+            if (ticket.betType === "even") return evenCount >= 13;
+          }
+          if (ticket.gameType === "base") return true;
+          return false;
+        });
+
+        // Update winning periods for tickets
+        winningTickets.forEach(winningTicket => {
+          const ticketIndex = updatedTickets.findIndex(t => t.id === winningTicket.id);
+          if (ticketIndex !== -1 && updatedTickets[ticketIndex].winningPeriods) {
+            updatedTickets[ticketIndex].winningPeriods!.push(period);
+          }
+        });
+
+        newResults.push({
+          period,
+          drawNumbers,
+          winningTickets,
+        });
+      }
+
+      // Update tickets with winning periods
+      setTickets([...tickets, ...updatedTickets]);
+      setResults([...newResults, ...results.slice(0, 11)]);
+      
+      // Clear selections
+      setSelectedBigSmall([]);
+      setSelectedOddEven([]);
+      setSelectedMultiplier(null);
+      setPeriods(null);
+      // Switch to results tab
+      setActiveTab('results');
+    }
