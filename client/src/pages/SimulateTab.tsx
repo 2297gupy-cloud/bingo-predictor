@@ -79,8 +79,7 @@ export default function SimulateTab() {
   const [selectedOddEven, setSelectedOddEven] = useState<("odd" | "even")[]>([]);
   
   // Multiplier and periods (null = not selected)
-  const [bigSmallMultiplier, setBigSmallMultiplier] = useState<number | null>(null);
-  const [oddEvenMultiplier, setOddEvenMultiplier] = useState<number | null>(null);
+  const [selectedMultiplier, setSelectedMultiplier] = useState<number | null>(null);
   const [periods, setPeriods] = useState<number | null>(null);
   // Bet star
   const [betStar, setBetStar] = useState<number | null>(null);
@@ -127,7 +126,7 @@ export default function SimulateTab() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Calculate bet amount - only affected by multiplier and periods
+  // Calculate bet amount - affected by multiplier and periods (not star)
   const calculateBetAmount = (multiplier: number | null, periods: number | null) => {
     return BASE_BET * (multiplier || 1) * (periods || 1);
   };
@@ -135,12 +134,11 @@ export default function SimulateTab() {
   // Calculate estimated winnings
   const calculateEstimatedWinnings = () => {
     let total = 0;
+    const multiplier = selectedMultiplier || 1;
     if (betStar && selectedBigSmall.length > 0 && periods) {
-      const multiplier = bigSmallMultiplier || 1;
       total += 150 * betStar * multiplier * periods * selectedBigSmall.length;
     }
     if (betStar && selectedOddEven.length > 0 && periods) {
-      const multiplier = oddEvenMultiplier || 1;
       total += 150 * betStar * multiplier * periods * selectedOddEven.length;
     }
     return total;
@@ -163,9 +161,9 @@ export default function SimulateTab() {
         star: betStar,
         gameType: type === "big" ? "big" : "small",
         betType: type,
-        multiplier: bigSmallMultiplier,
+        multiplier: selectedMultiplier,
         periods: periods || 1,
-        totalBet: calculateBetAmount(bigSmallMultiplier, periods),
+        totalBet: calculateBetAmount(selectedMultiplier, periods),
         selectedNumbers: selectedNumbers,
       });
     });
@@ -177,9 +175,9 @@ export default function SimulateTab() {
         star: betStar,
         gameType: "oddeven",
         betType: type,
-        multiplier: oddEvenMultiplier,
+        multiplier: selectedMultiplier,
         periods: periods || 1,
-        totalBet: calculateBetAmount(oddEvenMultiplier, periods),
+        totalBet: calculateBetAmount(selectedMultiplier, periods),
         selectedNumbers: selectedNumbers,
       });
     });
@@ -191,21 +189,46 @@ export default function SimulateTab() {
         star: betStar,
         gameType: "base",
         betType: "base",
-        multiplier: null,
+        multiplier: selectedMultiplier,
         periods: periods || 1,
-        totalBet: calculateBetAmount(null, periods),
+        totalBet: calculateBetAmount(selectedMultiplier, periods),
         selectedNumbers: selectedNumbers,
       });
     }
 
     if (newTickets.length > 0) {
       setTickets([...tickets, ...newTickets]);
+      
+      // 自動為新投注創建開獎結果
+      const drawNumbers = Array.from({ length: 20 }, () => Math.floor(Math.random() * 80) + 1);
+      const bigCount = drawNumbers.filter(n => n >= 41).length;
+      const smallCount = drawNumbers.filter(n => n <= 40).length;
+      const oddCount = drawNumbers.filter(n => n % 2 === 1).length;
+      const evenCount = drawNumbers.filter(n => n % 2 === 0).length;
+
+      const winningTickets = newTickets.filter(ticket => {
+        if (ticket.gameType === "big") return bigCount >= 13;
+        if (ticket.gameType === "small") return smallCount >= 13;
+        if (ticket.gameType === "oddeven") {
+          if (ticket.betType === "odd") return oddCount >= 13;
+          if (ticket.betType === "even") return evenCount >= 13;
+        }
+        if (ticket.gameType === "base") return true;
+        return false;
+      });
+
+      const newResult: DrawResult = {
+        period: results.length + 1,
+        drawNumbers,
+        winningTickets,
+      };
+
+      setResults([newResult, ...results.slice(0, 11)]);
+      
       // Clear selections
-      setBetStar(null);
       setSelectedBigSmall([]);
       setSelectedOddEven([]);
-      setBigSmallMultiplier(null);
-      setOddEvenMultiplier(null);
+      setSelectedMultiplier(null);
       setPeriods(null);
       // Switch to results tab
       setActiveTab('results');
@@ -422,50 +445,32 @@ export default function SimulateTab() {
                 </div>
               </div>
 
-              {/* Multiplier selection */}
-              {selectedBigSmall.length > 0 && (
-                <div className="space-y-0.5">
-                  <p className="text-xs text-gray-400">大小投注倍數</p>
-                  <div className="grid grid-cols-5 gap-0.5">
-                    {MULTIPLIERS.map(mult => (
+              {/* Multiplier selection - Always show */}
+              <div className="space-y-0.5">
+                <p className="text-xs text-gray-400">投注倍數</p>
+                <div className="grid grid-cols-5 gap-0.5">
+                  {MULTIPLIERS.map(mult => {
+                    const isSelected = selectedMultiplier === mult;
+                    
+                    return (
                       <button
-                        key={`bs-${mult}`}
-                        onClick={() => setBigSmallMultiplier(bigSmallMultiplier === mult ? null : mult)}
+                        key={`mult-${mult}`}
+                        onClick={() => {
+                          setSelectedMultiplier(isSelected ? null : mult);
+                        }}
                         className={cn(
                           "text-xs px-1 py-1 rounded border text-center transition-all",
-                          bigSmallMultiplier === mult
+                          isSelected
                             ? "bg-green-500 text-white border-green-600 font-bold"
                             : "bg-black/20 text-gray-400 border-gray-600 hover:border-green-400"
                         )}
                       >
                         x{mult}
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
-
-              {selectedOddEven.length > 0 && (
-                <div className="space-y-0.5">
-                  <p className="text-xs text-gray-400">單雙投注倍數</p>
-                  <div className="grid grid-cols-5 gap-0.5">
-                    {MULTIPLIERS.map(mult => (
-                      <button
-                        key={`oe-${mult}`}
-                        onClick={() => setOddEvenMultiplier(oddEvenMultiplier === mult ? null : mult)}
-                        className={cn(
-                          "text-xs px-1 py-1 rounded border text-center transition-all",
-                          oddEvenMultiplier === mult
-                            ? "bg-green-500 text-white border-green-600 font-bold"
-                            : "bg-black/20 text-gray-400 border-gray-600 hover:border-green-400"
-                        )}
-                      >
-                        x{mult}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              </div>
 
               {/* Period selection */}
               <div className="space-y-0.5">
@@ -491,7 +496,7 @@ export default function SimulateTab() {
               {/* Bet amount display */}
               {(selectedBigSmall.length > 0 || selectedOddEven.length > 0 || betStar) && (
                 <div className="bg-black/20 border border-orange-500/30 rounded p-1 text-xs text-orange-400">
-                  <div>基礎: NT${formatNumber(BASE_BET)} x {bigSmallMultiplier || oddEvenMultiplier || 1} x {periods || 1} = NT${formatNumber(calculateBetAmount(bigSmallMultiplier || oddEvenMultiplier, periods))}</div>
+                  <div>基礎: NT${formatNumber(BASE_BET)} x {selectedMultiplier || 1} x {periods || 1} = NT${formatNumber(calculateBetAmount(selectedMultiplier, periods))}</div>
                   {calculateEstimatedWinnings() > 0 && (
                     <div className="text-yellow-400">預期獎金: NT${formatNumber(calculateEstimatedWinnings())}</div>
                   )}
@@ -537,7 +542,7 @@ export default function SimulateTab() {
                   </div>
                 ))}
                 <div className="text-xs text-orange-400 font-bold pt-1 border-t border-gray-600">
-                  Total: NT${formatNumber(totalBetAmount)}
+                  合計: NT${formatNumber(totalBetAmount)}
                 </div>
               </CardContent>
             </Card>
@@ -572,10 +577,10 @@ export default function SimulateTab() {
                           ? 'border-green-500/30 bg-green-500/5' 
                           : 'border-gray-500/30 bg-gray-500/5'
                       }`}>
-                        <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center">
                           <div className={`font-bold ${
                             isDrawn ? 'text-green-400' : 'text-gray-400'
-                          }`}>{gameTypeLabel} | {ticket.star}星</div>
+                          }`}>{ticket.star}星</div>
                           <div className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                             isDrawn 
                               ? 'bg-green-500/30 text-green-400' 
@@ -604,7 +609,7 @@ export default function SimulateTab() {
                     );
                   })}
                   <div className="text-xs text-green-400 font-bold border-t border-green-500/30 pt-1 mt-1">
-                    Total: NT${formatNumber(tickets.reduce((sum, t) => sum + t.totalBet, 0))}
+                    合計: NT${formatNumber(tickets.reduce((sum, t) => sum + t.totalBet, 0))}
                   </div>
                 </CardContent>
               </Card>
