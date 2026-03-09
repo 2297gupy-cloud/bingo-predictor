@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -90,6 +90,42 @@ export default function SimulateTab() {
   const [results, setResults] = useState<DrawResult[]>([]);
   const [activeTab, setActiveTab] = useState("bet");
   const [hasNewYearBonus, setHasNewYearBonus] = useState(false);
+  
+  // Countdown timer state
+  const [countdownTime, setCountdownTime] = useState(300); // 5 minutes in seconds
+  const [isCountingDown, setIsCountingDown] = useState(false);
+  
+  // Countdown timer effect
+  useEffect(() => {
+    if (!isCountingDown || countdownTime <= 0) return;
+    
+    const timer = setInterval(() => {
+      setCountdownTime(prev => {
+        if (prev <= 1) {
+          setIsCountingDown(false);
+          return 300; // Reset to 5 minutes
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [isCountingDown, countdownTime]);
+  
+  // Start countdown when switching to results tab
+  useEffect(() => {
+    if (activeTab === 'results' && !isCountingDown) {
+      setCountdownTime(300);
+      setIsCountingDown(true);
+    }
+  }, [activeTab]);
+  
+  // Format countdown time
+  const formatCountdown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Calculate bet amount - only affected by multiplier and periods
   const calculateBetAmount = (multiplier: number | null, periods: number | null) => {
@@ -509,69 +545,110 @@ export default function SimulateTab() {
         </TabsContent>
 
         <TabsContent value="results" className="space-y-1.5">
-          {/* Display bet records */}
-          {tickets.length > 0 && (
-            <Card className="border-green-500 bg-black/40">
+          <div className="space-y-1.5">
+            {/* Countdown timer */}
+            <Card className="border-blue-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(59, 130, 246, 0.6)" }}>
               <CardHeader className="py-1">
-                <CardTitle className="text-xs">投注紀錄</CardTitle>
+                <CardTitle className="text-xs">驗證倒計時</CardTitle>
               </CardHeader>
-              <CardContent className="py-0.5 space-y-1">
-                {tickets.map(ticket => {
-                  const gameTypeLabel = ticket.gameType === 'base' ? '基礎' : ticket.gameType === 'big' ? '大' : ticket.gameType === 'small' ? '小' : ticket.betType === 'odd' ? '單' : '雙';
-                  const numbersDisplay = ticket.selectedNumbers && ticket.selectedNumbers.length > 0 ? ticket.selectedNumbers.join(', ') : '無';
-                  const winStatus = ticket.isWinning ? '中獎 NT$' + formatNumber(ticket.winningAmount || 0) : '未中';
-                  
-                  return (
-                    <div key={ticket.id} className="text-xs text-green-400 border border-green-500/30 rounded p-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div>{gameTypeLabel} | {ticket.star}星 | 號碼: {numbersDisplay}</div>
-                          <div>x{ticket.multiplier || 1} {ticket.periods}p - NT${formatNumber(ticket.totalBet)}</div>
-                        </div>
-                        <div className={ticket.isWinning ? 'text-yellow-400 font-bold' : 'text-red-400'}>
-                          {winStatus}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="text-xs text-green-400 font-bold border-t border-green-500/30 pt-1 mt-1">
-                  Total: NT${formatNumber(tickets.reduce((sum, t) => sum + t.totalBet, 0))}
-                </div>
+              <CardContent className="py-2 text-center">
+                <div className="text-2xl font-bold text-blue-400">{formatCountdown(countdownTime)}</div>
+                <div className="text-xs text-gray-400 mt-1">驗證最新即時數據</div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Display draw results */}
-          {results.length === 0 ? (
-                <Card className="border-orange-500 bg-black/40">
-              <CardContent className="py-4 text-center text-xs text-gray-400">
-                等待開獨...
-              </CardContent>
-            </Card>
-          ) : (
-            results.map(result => (
-              <Card key={result.period} className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
-                <CardHeader className="py-1">
-                  <CardTitle className="text-xs">第 {result.period} 期開獨結果</CardTitle>
-                </CardHeader>
-                <CardContent className="py-0.5 space-y-1">
-                  <div className="grid grid-cols-10 gap-0.5">
-                    {result.drawNumbers.map((num, idx) => (
-                      <div key={idx} className="text-xs bg-orange-500/20 border border-orange-500 rounded p-1 text-center text-orange-400 font-bold">
-                        {num}
-                      </div>
-                    ))}
-                  </div>
-                  {result.winningTickets.length > 0 && (
-                    <div className="text-xs text-green-400">
-                      中獨投注: {result.winningTickets.length}
-                    </div>
-                  )}
+            {/* Order list */}
+            {tickets.length === 0 ? (
+              <Card className="border-green-500 bg-black/40">
+                <CardContent className="py-4 text-center text-xs text-gray-400">
+                  沒有投注紀錄
                 </CardContent>
               </Card>
-            ))
-          )}
+            ) : (
+              <Card className="border-green-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(34, 197, 94, 0.6)" }}>
+                <CardHeader className="py-1">
+                  <CardTitle className="text-xs">訂單列表</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0.5 space-y-1 max-h-96 overflow-y-auto">
+                  {tickets.map(ticket => {
+                    const gameTypeLabel = ticket.gameType === 'base' ? '基础' : ticket.gameType === 'big' ? '大' : ticket.gameType === 'small' ? '小' : ticket.betType === 'odd' ? '單' : '雙';
+                    const winStatus = ticket.isWinning === null ? '等待' : ticket.isWinning ? '中' : '未中';
+                    return (
+                      <div key={ticket.id} className="text-xs border border-green-500/30 rounded p-1 bg-green-500/5">
+                        <div className="font-bold text-green-400">{gameTypeLabel} | {ticket.star}星</div>
+                        <div className="text-gray-300">號: {ticket.selectedNumbers && ticket.selectedNumbers.length > 0 ? ticket.selectedNumbers.join(',') : '無'}</div>
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-gray-400">x{ticket.multiplier || 1} {ticket.periods}p</span>
+                          <span className={ticket.isWinning ? 'text-yellow-400 font-bold' : ticket.isWinning === false ? 'text-red-400' : 'text-gray-400'}>
+                            {winStatus}
+                          </span>
+                        </div>
+                        <div className="text-orange-400 font-bold mt-1">NT${formatNumber(ticket.totalBet)}</div>
+                      </div>
+                    );
+                  })}
+                  <div className="text-xs text-green-400 font-bold border-t border-green-500/30 pt-1 mt-1">
+                    Total: NT${formatNumber(tickets.reduce((sum, t) => sum + t.totalBet, 0))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Draw results (未開獎 and 已開獎) */}
+            {/* Pending draws */}
+            <Card className="border-yellow-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(234, 179, 8, 0.6)" }}>
+              <CardHeader className="py-1">
+                <CardTitle className="text-xs">未開獎</CardTitle>
+              </CardHeader>
+              <CardContent className="py-1 space-y-1 max-h-48 overflow-y-auto">
+                {tickets.filter(t => t.isWinning === null).length === 0 ? (
+                  <div className="text-xs text-gray-400 text-center py-2">沒有未開獎訂單</div>
+                ) : (
+                  tickets.filter(t => t.isWinning === null).map((ticket, idx) => {
+                    const gameTypeLabel = ticket.gameType === 'base' ? '基础' : ticket.gameType === 'big' ? '大' : ticket.gameType === 'small' ? '小' : ticket.betType === 'odd' ? '單' : '雙';
+                    return (
+                      <div key={idx} className="text-xs border border-yellow-500/30 rounded p-1 bg-yellow-500/5">
+                        <div className="flex justify-between">
+                          <span className="text-yellow-400 font-bold">{gameTypeLabel} | {ticket.star}星</span>
+                          <span className="text-gray-400">NT${formatNumber(ticket.totalBet)}</span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Draw results */}
+            <Card className="border-orange-500 bg-black/40" style={{ boxShadow: "0 0 8px rgba(255, 140, 0, 0.6)" }}>
+              <CardHeader className="py-1">
+                <CardTitle className="text-xs">已開獎</CardTitle>
+              </CardHeader>
+              <CardContent className="py-1 space-y-1 max-h-48 overflow-y-auto">
+                {results.length === 0 ? (
+                  <div className="text-xs text-gray-400 text-center py-2">等待開獎...</div>
+                ) : (
+                  results.map(result => (
+                    <div key={result.period} className="border border-orange-500/30 rounded p-1 bg-orange-500/5">
+                      <div className="text-xs font-bold text-orange-400 mb-1">第 {result.period} 期</div>
+                      <div className="grid grid-cols-10 gap-0.5">
+                        {result.drawNumbers.map((num, idx) => (
+                          <div key={idx} className="text-[10px] bg-orange-500/20 border border-orange-500 rounded p-0.5 text-center text-orange-400 font-bold">
+                            {num}
+                          </div>
+                        ))}
+                      </div>
+                      {result.winningTickets.length > 0 && (
+                        <div className="text-xs text-green-400 mt-1">
+                          中獎: {result.winningTickets.length}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
