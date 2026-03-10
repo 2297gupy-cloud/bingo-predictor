@@ -1010,11 +1010,11 @@ export default function AiStrategyTab() {
                             ? item.hits.map((n: number) => `*${String(n).padStart(2, "0")}`).join("") + (allHit ? "【三星入袋】⭐" : "")
                             : "未中獎";
                           return (
-                            <div key={vidx} className={cn("text-[10px] flex items-center justify-between", isHit ? "text-green-400" : "text-muted-foreground")}>
-                              <span className="font-mono-num">
+                            <div key={vidx} className={cn("text-[10px] flex items-center gap-2", isHit ? "text-green-400" : "text-muted-foreground")}>
+                              <span className="font-mono-num flex-shrink-0">
                                 [{item.term}] {item.time}
                               </span>
-                              <span className="font-mono-num">{hitStr}</span>
+                              <span className="font-mono-num text-right">{hitStr}</span>
                             </div>
                           );
                         })}
