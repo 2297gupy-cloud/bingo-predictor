@@ -464,6 +464,9 @@ export default function AiStrategyTab() {
   const [analysisHistoryDate, setAnalysisHistoryDate] = useState(dateStr);
   const [analysisHistoryData, setAnalysisHistoryData] = useState<any[]>([]);
   const [analysisHistoryLoading, setAnalysisHistoryLoading] = useState(false);
+  // 批量分析進度狀態
+  const [batchAnalysisProgress, setBatchAnalysisProgress] = useState({ current: 0, total: 16, currentSlot: '' });
+  const [showBatchAnalysisProgress, setShowBatchAnalysisProgress] = useState(false);
 
   const analysisRecordsQuery = trpc.bingo.analysisRecords.useQuery(
     { endDate: analysisHistoryDate, days: 7 },
@@ -520,9 +523,35 @@ export default function AiStrategyTab() {
 
   const handleBatchAnalyze = async () => {
     try {
-      toast.info("開始批量分析過去 7 天的數據，請稍候...");
+      setShowBatchAnalysisProgress(true);
+      setBatchAnalysisProgress({ current: 0, total: 16, currentSlot: '07' });
+      
+      // 模擬進度更新（每個時段分析需要時間）
+      const progressInterval = setInterval(() => {
+        setBatchAnalysisProgress(prev => {
+          if (prev.current < 15) {
+            const slots = ['07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'];
+            return {
+              current: prev.current + 1,
+              total: 16,
+              currentSlot: slots[prev.current + 1] || '22'
+            };
+          }
+          return prev;
+        });
+      }, 2000); // 每 2 秒更新一次進度
+      
       await batchAnalyze.mutateAsync({ days: 7 });
+      
+      clearInterval(progressInterval);
+      setBatchAnalysisProgress({ current: 16, total: 16, currentSlot: '' });
+      
+      setTimeout(() => {
+        setShowBatchAnalysisProgress(false);
+        toast.success('批量分析完成！');
+      }, 1000);
     } catch (err: any) {
+      setShowBatchAnalysisProgress(false);
       toast.error(`批量分析失敗：${err.message}`);
     }
   };
@@ -1206,6 +1235,51 @@ export default function AiStrategyTab() {
           )}
         </CardContent>
       </Card>
+
+      {/* 批量分析進度對話框 */}
+      {showBatchAnalysisProgress && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-sm border-border/50 bg-background/95">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Loader2 className="h-5 w-5 text-amber-400 animate-spin" />
+                <h3 className="text-sm font-medium text-foreground">批量分析進度</h3>
+              </div>
+              
+              <div className="space-y-3">
+                {/* 進度條 */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>已分析：{batchAnalysisProgress.current}/{batchAnalysisProgress.total} 時段</span>
+                    <span>{Math.round((batchAnalysisProgress.current / batchAnalysisProgress.total) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-background/50 rounded-full h-2 overflow-hidden border border-border/30">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-400 to-amber-600 transition-all duration-300"
+                      style={{ width: `${(batchAnalysisProgress.current / batchAnalysisProgress.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* 當前時段 */}
+                {batchAnalysisProgress.currentSlot && (
+                  <div className="text-xs text-muted-foreground text-center">
+                    正在分析 <span className="text-amber-400 font-medium">{batchAnalysisProgress.currentSlot}時</span> 時段...
+                  </div>
+                )}
+                
+                {/* 完成提示 */}
+                {batchAnalysisProgress.current === batchAnalysisProgress.total && (
+                  <div className="flex items-center gap-2 justify-center text-xs text-green-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>分析完成！正在刷新數據...</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
