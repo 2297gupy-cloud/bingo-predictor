@@ -468,15 +468,15 @@ export default function AiStrategyTab() {
   const handleGeminiTest = async (sourceHour: string) => {
     try {
       const result = await geminiTest.mutateAsync({ date: dateStr, sourceHour });
-      if (result.success) {
-        toast.success(`Gemini 分析完成：${result.goldenBalls.map((n: number) => String(n).padStart(2, "0")).join(", ")}`);
+      if (result.success && result.goldenBalls) {
+        toast.success(`Forge AI 分析完成：${result.goldenBalls.map((n: number) => String(n).padStart(2, "0")).join(", ")}`);
         // 顯示分析結果
-        console.log("Gemini 分析結果:", result.analysis);
+        console.log("Forge AI 分析結果:", result.analysis);
       } else {
-        toast.error(`Gemini 分析失敗：${result.error}`);
+        toast.error(`Forge AI 分析失敗：${result.error}`);
       }
     } catch (err: any) {
-      toast.error(`Gemini 測試失敗：${err.message}`);
+      toast.error(`Forge AI 測試失敗：${err.message}`);
     }
   };
 

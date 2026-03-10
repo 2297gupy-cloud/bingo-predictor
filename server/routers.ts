@@ -12,7 +12,7 @@ import {
   predict,
   syncRecentDays,
 } from "./bingo";
-import { analyzeWithGemini } from "./geminiAnalysis";
+import { analyzeWithForge } from "./forgeAnalysis";
 import {
   HOUR_SLOTS,
   getAiPredictions,
@@ -206,14 +206,32 @@ export const appRouter = router({
         return { text };
       }),
 
-    // AI 一星策略：Gemini AI 測試
+    // AI 一星策略：Forge API 測試
     aiGeminiTest: publicProcedure
       .input(z.object({
         date: z.string(),
         sourceHour: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const result = await analyzeWithGemini(input.date, input.sourceHour);
+        const date = new Date(input.date);
+        const hour = parseInt(input.sourceHour);
+        const result = await analyzeWithForge(hour, date);
+        
+        // Save to database if analysis successful
+        if (result.success && result.goldenBalls) {
+          const slot = HOUR_SLOTS.find(s => s.source === input.sourceHour);
+          if (slot) {
+            await saveAiPrediction(
+              input.date,
+              input.sourceHour,
+              slot.target,
+              result.goldenBalls,
+              result.analysis || "Forge AI 分析",
+              false
+            );
+          }
+        }
+        
         return result;
       }),
 

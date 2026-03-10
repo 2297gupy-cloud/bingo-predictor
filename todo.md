@@ -304,3 +304,16 @@
 - [x] 實現 handleGeminiTest 函數
 - [x] 測試 AI 測試按鈕功能
 - [ ] 解決 Gemini API 配額限制問題（需要有效的 API 密鑰和計費方式）
+
+## 使用 Manus Forge API 重新構建 AI 測試 (2026-03-10)
+
+- [x] 移除 Gemini API 依賴和相關代碼
+- [x] 實現 Manus Forge API 整合邏輯
+- [x] 測試 AI 測試功能
+- [x] 驗證結果顯示
+
+## AI 測試黃金球帶入問題 (2026-03-10)
+
+- [x] 檢查 AI 測試結果是否正確帶入黃金球
+- [x] 修改 aiGeminiTest 路由以保存結果到數據庫
+- [x] 測試 AI 測試功能 - 黃金球正確帶入並顯示
