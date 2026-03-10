@@ -99,10 +99,11 @@ export async function getAnalysisRecords(
     // 為每個預測查詢實際開獎號碼並生成驗證記錄
     const records = await Promise.all(
       predictions.map(async (pred) => {
-        // 查詢源時段的開獎號碼（用於驗證）
-        const sourceHour = pred.sourceHour;
-        const startTime = `${sourceHour.padStart(2, "0")}:00`;
-        const endTime = `${sourceHour.padStart(2, "0")}:59`;
+        // 查詢目標時段的開獎號碼（用於驗證）
+        // 源時段 07:00~07:59 預測 → 驗證目標時段 08:00~08:59 的開獎
+        const targetHour = pred.targetHour;
+        const startTime = `${targetHour.padStart(2, "0")}:00`;
+        const endTime = `${targetHour.padStart(2, "0")}:59`;
 
         const draws = await db
           .select()

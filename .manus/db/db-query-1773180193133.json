@@ -1,0 +1,14 @@
+{
+  "query": "SELECT COUNT(*) as total, COUNT(DISTINCT predDate) as dates FROM ai_predictions;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user ufchkNX5hQ8UsXE.root --database mhBYLdSLEBjgwNemRp68Rr --execute SELECT COUNT(*) as total, COUNT(DISTINCT predDate) as dates FROM ai_predictions;",
+  "rows": [
+    {
+      "total": "10",
+      "dates": "6"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tdates\n10\t6\n",
+  "stderr": "",
+  "execution_time_ms": 1617
+}

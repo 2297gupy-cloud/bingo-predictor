@@ -1,0 +1,110 @@
+{
+  "query": "SELECT * FROM ai_predictions ORDER BY predDate DESC, sourceHour DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user ufchkNX5hQ8UsXE.root --database mhBYLdSLEBjgwNemRp68Rr --execute SELECT * FROM ai_predictions ORDER BY predDate DESC, sourceHour DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "90010",
+      "predDate": "2026-03-10",
+      "sourceHour": "22",
+      "targetHour": "23",
+      "goldenBalls": "18,38,47",
+      "aiReasoning": "**",
+      "isManual": "0",
+      "createdAt": "2026-03-10 14:59:22"
+    },
+    {
+      "id": "90009",
+      "predDate": "2026-03-10",
+      "sourceHour": "21",
+      "targetHour": "22",
+      "goldenBalls": "70,23,35",
+      "aiReasoning": "手動輸入",
+      "isManual": "1",
+      "createdAt": "2026-03-10 14:35:12"
+    },
+    {
+      "id": "90008",
+      "predDate": "2026-03-09",
+      "sourceHour": "22",
+      "targetHour": "23",
+      "goldenBalls": "40,58,12",
+      "aiReasoning": "手動輸入",
+      "isManual": "1",
+      "createdAt": "2026-03-09 14:55:45"
+    },
+    {
+      "id": "90007",
+      "predDate": "2026-03-09",
+      "sourceHour": "21",
+      "targetHour": "22",
+      "goldenBalls": "48,69,71",
+      "aiReasoning": "根據近期數據，48、69、71在多期中頻繁出現，呈現強勢熱門與穩定連莊趨勢，並在斜連交會點上顯示高機率落球潛力。已排除死碼，強化防禦，推薦為最佳黃金球。",
+      "isManual": "0",
+      "createdAt": "2026-03-09 14:54:53"
+    },
+    {
+      "id": "60006",
+      "predDate": "2026-03-08",
+      "sourceHour": "19",
+      "targetHour": "20",
+      "goldenBalls": "54,79,69",
+      "aiReasoning": "根據近15期數據，54、79、69表現出強勢熱門與尾數共振特徵，且54和79有連莊趨勢，同時位於多個斜連交會點，是高機率落球區。已排除死碼，提升預測精準度。",
+      "isManual": "0",
+      "createdAt": "2026-03-08 12:47:04"
+    },
+    {
+      "id": "60003",
+      "predDate": "2026-03-07",
+      "sourceHour": "18",
+      "targetHour": "19",
+      "goldenBalls": "19,32,70",
+      "aiReasoning": "綜合分析近15期數據，數字19、32、70在強勢熱門號、尾數共振、穩定連莊、斜連交會點等多個維度表現突出，且已排除死碼，預期在接下來的五期內有較高開出機率。",
+      "isManual": "0",
+      "createdAt": "2026-03-08 11:26:49"
+    },
+    {
+      "id": "1",
+      "predDate": "2026-03-06",
+      "sourceHour": "22",
+      "targetHour": "23",
+      "goldenBalls": "52,62,3",
+      "aiReasoning": "AI 分析完成",
+      "isManual": "0",
+      "createdAt": "2026-03-06 22:00:23"
+    },
+    {
+      "id": "4",
+      "predDate": "2026-03-06",
+      "sourceHour": "07",
+      "targetHour": "08",
+      "goldenBalls": "29,39,40",
+      "aiReasoning": "29在11期內出現7次，為最頻繁號碼；39和40各有5次出現，且在近期表現強勁，符合強勢熱門號和尾數共振的特徵，被選為黃金球。",
+      "isManual": "0",
+      "createdAt": "2026-03-06 22:42:42"
+    },
+    {
+      "id": "3",
+      "predDate": "2026-03-05",
+      "sourceHour": "08",
+      "targetHour": "09",
+      "goldenBalls": "79,39,47",
+      "aiReasoning": "綜合分析近12期數據：79、39、47在多期中頻繁出現，且在不同時間段內展現出穩定的出現頻率，符合連莊、尾數共振及斜連交會點的特徵，因此被選為最佳黃金球。",
+      "isManual": "0",
+      "createdAt": "2026-03-06 22:30:26"
+    },
+    {
+      "id": "2",
+      "predDate": "2026-03-05",
+      "sourceHour": "07",
+      "targetHour": "08",
+      "goldenBalls": "10,26,12",
+      "aiReasoning": "手動輸入",
+      "isManual": "1",
+      "createdAt": "2026-03-06 22:25:36"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpredDate\tsourceHour\ttargetHour\tgoldenBalls\taiReasoning\tisManual\tcreatedAt\n90010\t2026-03-10\t22\t23\t18,38,47\t**\t0\t2026-03-10 14:59:22\n90009\t2026-03-10\t21\t22\t70,23,35\t手動輸入\t1\t2026-03-10 14:35:12\n90008\t2026-03-09\t22\t23\t40,58,12\t手動輸入\t1\t2026-03-09 14:55:45\n90007\t2026-03-09\t21\t22\t48,69,71\t根據近期數據，48、69、71在多期中頻繁出現，呈現強勢熱門與穩定連莊趨勢，並在斜連交會點上顯示高機率落球潛力。已排除死碼，強化防禦，推薦為最佳黃金球。\t0\t2026-03-09 14:54:53\n60006\t2026-03-08\t19\t20\t54,79,69\t根據近15期數據，54、79、69表現出強勢熱門與尾數共振特徵，且54和79有連莊趨勢，同時位於多個斜連交會點，是高機率落球區。已排除死碼，提升預測精準度。\t0\t2026-03-08 12:47:04\n60003\t2026-03-07\t18\t19\t19,32,70\t綜合分析近15期數據，數字19、32、70在強勢熱門號、尾數共振、穩定連莊、斜連交會點等多個維度表現突出，且已排除死碼，預期在接下來的五期內有較高開出機率。\t0\t2026-03-08 11:26:49\n1\t2026-03-06\t22\t23\t52,62,3\tAI 分析完成\t0\t2026-03-06 22:00:23\n4\t2026-03-06\t07\t08\t29,39,40\t29在11期內出現7次，為最頻繁號碼；39和40各有5次出現，且在近期表現強勁，符合強勢熱門號和尾數共振的特徵，被選為黃金球。\t0\t2026-03-06 22:42:42\n3\t2026-03-05\t08\t09\t79,39,47\t綜合分析近12期數據：79、39、47在多期中頻繁出現，且在不同時間段內展現出穩定的出現頻率，符合連莊、尾數共振及斜連交會點的特徵，因此被選為最佳黃金球。\t0\t2026-03-06 22:30:26\n2\t2026-03-05\t07\t08\t10,26,12\t手動輸入\t1\t2026-03-06 22:25:36\n",
+  "stderr": "",
+  "execution_time_ms": 1593
+}
