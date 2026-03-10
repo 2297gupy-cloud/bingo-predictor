@@ -434,7 +434,13 @@ export default function AiStrategyTab() {
   const aiAnalyze = useAiAnalyze();
   const aiManualInput = useAiManualInput();
   const aiDeletePrediction = useAiDeletePrediction();
-  const geminiTest = trpc.bingo.aiGeminiTest.useMutation();
+  const utils = trpc.useUtils();
+  const geminiTest = trpc.bingo.aiGeminiTest.useMutation({
+    onSuccess: () => {
+      // 刷新預測數據
+      utils.bingo.aiPredictions.invalidate({ date: dateStr });
+    },
+  });
 
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [verifySlot, setVerifySlot] = useState<string | null>(null);
