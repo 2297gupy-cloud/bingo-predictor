@@ -117,23 +117,43 @@ export async function analyzeWithForge(hour: number, date: Date) {
       temperature: 0.7,
     });
 
-    // 解析回傳結果
-    const goldenBallsMatch = text.match(/黃金三星:\s*(\d+)\s+(\d+)\s+(\d+)/);
-    const analysisMatch = text.match(/分析說明:\s*(.+?)(?:\n|$)/);
+    // 解析回傳結果 - 支持多種格式
+    let goldenBalls: number[] = [];
+    
+    // 嘗試多種格式的正則表達式
+    const formats = [
+      /黃金三星[：:]*\s*([\d\s,，、]+)/,  // 支持各種分隔符
+      /必殺黃金三星[：:]*\s*([\d\s,，、]+)/,
+      /三星[：:]*\s*([\d\s,，、]+)/,
+    ];
+    
+    let ballsText = "";
+    for (const format of formats) {
+      const match = text.match(format);
+      if (match) {
+        ballsText = match[1];
+        break;
+      }
+    }
+    
+    if (ballsText) {
+      // 提取所有數字
+      const numbers = ballsText.match(/\d+/g);
+      if (numbers && numbers.length >= 3) {
+        goldenBalls = numbers.slice(0, 3).map(n => parseInt(n));
+      }
+    }
+    
+    const analysisMatch = text.match(/分析說明[：:]*\s*(.+?)(?:\n|$)/);
 
-    if (!goldenBallsMatch) {
+    if (goldenBalls.length !== 3) {
+      console.log("[Forge Analysis] Raw response:", text);
       return {
         success: false,
         error: "Failed to parse AI response",
         rawResponse: text,
       };
     }
-
-    const goldenBalls = [
-      parseInt(goldenBallsMatch[1]),
-      parseInt(goldenBallsMatch[2]),
-      parseInt(goldenBallsMatch[3]),
-    ];
 
     const analysis = analysisMatch ? analysisMatch[1].trim() : "AI 分析完成";
 
