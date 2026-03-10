@@ -1012,7 +1012,7 @@ export default function AiStrategyTab() {
                           return (
                             <div key={vidx} className={cn("text-[10px] flex items-center justify-between", isHit ? "text-green-400" : "text-muted-foreground")}>
                               <span className="font-mono-num">
-                                [{item.term}] {item.time} 115013{String(item.term).padStart(2, "0")}
+                                [{item.term}] {item.time}
                               </span>
                               <span className="font-mono-num">{hitStr}</span>
                             </div>
