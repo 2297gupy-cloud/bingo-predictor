@@ -503,7 +503,22 @@ export default function AiStrategyTab() {
     }
   };
 
-  const handleGeminiTest = async () => {
+  const handleGeminiTest = async (sourceHour: string) => {
+    try {
+      const result = await geminiTest.mutateAsync({ date: dateStr, sourceHour });
+      if (result.success && result.goldenBalls) {
+        toast.success(`Forge AI 分析完成：${result.goldenBalls.map((n: number) => String(n).padStart(2, "0")).join(", ")}`);
+        // 顯示分析結果
+        console.log("Forge AI 分析結果:", result.analysis);
+      } else {
+        toast.error(`Forge AI 分析失敗：${result.error}`);
+      }
+    } catch (err: any) {
+      toast.error(`Forge AI 測試失敗：${err.message}`);
+    }
+  };
+
+  const handleBatchAnalyze = async () => {
     try {
       toast.info("開始批量分析過去 7 天的數據，請稍候...");
       await batchAnalyze.mutateAsync({ days: 7 });
@@ -745,16 +760,30 @@ export default function AiStrategyTab() {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => handleGeminiTest()}
-                disabled={batchAnalyze.isPending}
+                onClick={() => handleGeminiTest(effectiveSlot)}
+                disabled={geminiTest.isPending}
                 className="gap-1.5 border-2 border-purple-500 text-sm px-3 py-2 hover:bg-purple-500/10 animate-border-pulse hover:animate-none font-semibold"
+              >
+                {geminiTest.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                AI測試
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleBatchAnalyze()}
+                disabled={batchAnalyze.isPending}
+                className="gap-1.5 border-2 border-amber-500 text-sm px-3 py-2 hover:bg-amber-500/10 animate-border-pulse hover:animate-none font-semibold"
               >
                 {batchAnalyze.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Sparkles className="h-4 w-4" />
                 )}
-                AI測試
+                一鍵批量分析
               </Button>
             </div>
           </div>
@@ -978,9 +1007,25 @@ export default function AiStrategyTab() {
       {/* 過去 7 天 AI 分析紀錄 */}
       <Card className="border-border/30">
         <CardContent className="p-2 sm:p-3">
-          <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowAnalysisHistory(!showAnalysisHistory)}>
-            <span className="text-xs font-medium text-foreground">過去 7 天 AI 分析紀錄</span>
-            <ChevronRight className={cn("h-4 w-4 transition-transform", showAnalysisHistory && "rotate-90")} />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 cursor-pointer flex-1" onClick={() => setShowAnalysisHistory(!showAnalysisHistory)}>
+              <span className="text-xs font-medium text-foreground">過去 7 天 AI 分析紀錄</span>
+              <ChevronRight className={cn("h-4 w-4 transition-transform", showAnalysisHistory && "rotate-90")} />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBatchAnalyze()}
+              disabled={batchAnalyze.isPending}
+              className="text-[10px] px-2 py-1 h-6 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 shrink-0"
+            >
+              {batchAnalyze.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Sparkles className="h-3 w-3" />
+              )}
+              AI測試紀錄
+            </Button>
           </div>
           
           {showAnalysisHistory && (
