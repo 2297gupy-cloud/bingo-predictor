@@ -441,6 +441,17 @@ export default function AiStrategyTab() {
       utils.bingo.aiPredictions.invalidate({ date: dateStr });
     },
   });
+  
+  const batchAnalyze = trpc.bingo.batchAnalyzeLastDays.useMutation({
+    onSuccess: () => {
+      // 刷新預測數據
+      utils.bingo.aiPredictions.invalidate();
+      toast.success("批量分析完成！");
+    },
+    onError: (err: any) => {
+      toast.error(`批量分析失敗：${err.message}`);
+    },
+  });
 
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [verifySlot, setVerifySlot] = useState<string | null>(null);
@@ -492,18 +503,12 @@ export default function AiStrategyTab() {
     }
   };
 
-  const handleGeminiTest = async (sourceHour: string) => {
+  const handleGeminiTest = async () => {
     try {
-      const result = await geminiTest.mutateAsync({ date: dateStr, sourceHour });
-      if (result.success && result.goldenBalls) {
-        toast.success(`Forge AI 分析完成：${result.goldenBalls.map((n: number) => String(n).padStart(2, "0")).join(", ")}`);
-        // 顯示分析結果
-        console.log("Forge AI 分析結果:", result.analysis);
-      } else {
-        toast.error(`Forge AI 分析失敗：${result.error}`);
-      }
+      toast.info("開始批量分析過去 7 天的數據，請稍候...");
+      await batchAnalyze.mutateAsync({ days: 7 });
     } catch (err: any) {
-      toast.error(`Forge AI 測試失敗：${err.message}`);
+      toast.error(`批量分析失敗：${err.message}`);
     }
   };
 
@@ -740,11 +745,11 @@ export default function AiStrategyTab() {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => handleGeminiTest(effectiveSlot)}
-                disabled={geminiTest.isPending}
+                onClick={() => handleGeminiTest()}
+                disabled={batchAnalyze.isPending}
                 className="gap-1.5 border-2 border-purple-500 text-sm px-3 py-2 hover:bg-purple-500/10 animate-border-pulse hover:animate-none font-semibold"
               >
-                {geminiTest.isPending ? (
+                {batchAnalyze.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Sparkles className="h-4 w-4" />
