@@ -426,6 +426,99 @@ export async function runAiAnalysis(dateStr: string, sourceHour: string): Promis
   return result;
 }
 
+// ============ Batch Analysis ============
+
+/**
+ * Batch analyze all hour slots for a given date.
+ * Returns analysis results for each slot.
+ */
+export async function batchAnalyzeDate(dateStr: string): Promise<{
+  date: string;
+  results: Array<{
+    sourceHour: string;
+    success: boolean;
+    goldenBalls?: number[];
+    reasoning?: string;
+    error?: string;
+  }>;
+}> {
+  const results = [];
+
+  // Analyze each hour slot (07-22, skip 23 as it has no next period)
+  for (const slot of HOUR_SLOTS) {
+    try {
+      const result = await runAiAnalysis(dateStr, slot.source);
+      results.push({
+        sourceHour: slot.source,
+        success: true,
+        goldenBalls: result.goldenBalls,
+        reasoning: result.reasoning,
+      });
+    } catch (err) {
+      results.push({
+        sourceHour: slot.source,
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
+  }
+
+  return {
+    date: dateStr,
+    results,
+  };
+}
+
+/**
+ * Batch analyze the last N days (including today).
+ * Returns analysis results for each day.
+ */
+export async function batchAnalyzeLastDays(days: number): Promise<{
+  daysAnalyzed: number;
+  dateResults: Array<{
+    date: string;
+    success: boolean;
+    analyzedSlots: number;
+    failedSlots: number;
+  }>;
+}> {
+  const dateResults = [];
+  const today = new Date();
+  // Convert to UTC+8
+  today.setTime(today.getTime() + 8 * 60 * 60 * 1000);
+
+  for (let i = 0; i < days; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split("T")[0];
+
+    try {
+      const result = await batchAnalyzeDate(dateStr);
+      const successCount = result.results.filter(r => r.success).length;
+      const failCount = result.results.filter(r => !r.success).length;
+
+      dateResults.push({
+        date: dateStr,
+        success: failCount === 0,
+        analyzedSlots: successCount,
+        failedSlots: failCount,
+      });
+    } catch (err) {
+      dateResults.push({
+        date: dateStr,
+        success: false,
+        analyzedSlots: 0,
+        failedSlots: HOUR_SLOTS.length,
+      });
+    }
+  }
+
+  return {
+    daysAnalyzed: days,
+    dateResults,
+  };
+}
+
 // ============ Get current hour slot info ============
 
 /**

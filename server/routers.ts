@@ -22,6 +22,8 @@ import {
   saveAiPrediction,
   getHourDraws,
   getCurrentHourSlot,
+  batchAnalyzeDate,
+  batchAnalyzeLastDays,
 } from "./aiStrategy";
 import { getDb } from "./db";
 import { bingoDraws } from "../drizzle/schema";
@@ -236,6 +238,24 @@ export const appRouter = router({
       }),
 
     // 查詢過去 N 天的 AI 分析紀錄
+    // AI 一星策略：批量分析指定日期的所有時段
+    batchAnalyzeDate: publicProcedure
+      .input(z.object({
+        date: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        return await batchAnalyzeDate(input.date);
+      }),
+
+    // AI 一星策略：批量分析過去 N 天
+    batchAnalyzeLastDays: publicProcedure
+      .input(z.object({
+        days: z.number().min(1).max(30).default(7),
+      }))
+      .mutation(async ({ input }) => {
+        return await batchAnalyzeLastDays(input.days);
+      }),
+
     analysisRecords: publicProcedure
       .input(z.object({
         endDate: z.string().optional(),

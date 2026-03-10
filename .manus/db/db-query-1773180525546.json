@@ -1,0 +1,20 @@
+{
+  "query": "SELECT sourceHour, targetHour, goldenBalls FROM ai_predictions WHERE predDate = '2026-03-10' ORDER BY sourceHour ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user ufchkNX5hQ8UsXE.root --database mhBYLdSLEBjgwNemRp68Rr --execute SELECT sourceHour, targetHour, goldenBalls FROM ai_predictions WHERE predDate = '2026-03-10' ORDER BY sourceHour ASC;",
+  "rows": [
+    {
+      "sourceHour": "21",
+      "targetHour": "22",
+      "goldenBalls": "70,23,35"
+    },
+    {
+      "sourceHour": "22",
+      "targetHour": "23",
+      "goldenBalls": "18,38,47"
+    }
+  ],
+  "messages": [],
+  "stdout": "sourceHour\ttargetHour\tgoldenBalls\n21\t22\t70,23,35\n22\t23\t18,38,47\n",
+  "stderr": "",
+  "execution_time_ms": 1674
+}

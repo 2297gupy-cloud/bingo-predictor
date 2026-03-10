@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, predDate, sourceHour, targetHour, goldenBalls FROM ai_predictions ORDER BY predDate DESC, sourceHour ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user ufchkNX5hQ8UsXE.root --database mhBYLdSLEBjgwNemRp68Rr --execute SELECT id, predDate, sourceHour, targetHour, goldenBalls FROM ai_predictions ORDER BY predDate DESC, sourceHour ASC;",
+  "rows": [
+    {
+      "id": "90009",
+      "predDate": "2026-03-10",
+      "sourceHour": "21",
+      "targetHour": "22",
+      "goldenBalls": "70,23,35"
+    },
+    {
+      "id": "90010",
+      "predDate": "2026-03-10",
+      "sourceHour": "22",
+      "targetHour": "23",
+      "goldenBalls": "18,38,47"
+    },
+    {
+      "id": "90007",
+      "predDate": "2026-03-09",
+      "sourceHour": "21",
+      "targetHour": "22",
+      "goldenBalls": "48,69,71"
+    },
+    {
+      "id": "90008",
+      "predDate": "2026-03-09",
+      "sourceHour": "22",
+      "targetHour": "23",
+      "goldenBalls": "40,58,12"
+    },
+    {
+      "id": "60006",
+      "predDate": "2026-03-08",
+      "sourceHour": "19",
+      "targetHour": "20",
+      "goldenBalls": "54,79,69"
+    },
+    {
+      "id": "60003",
+      "predDate": "2026-03-07",
+      "sourceHour": "18",
+      "targetHour": "19",
+      "goldenBalls": "19,32,70"
+    },
+    {
+      "id": "4",
+      "predDate": "2026-03-06",
+      "sourceHour": "07",
+      "targetHour": "08",
+      "goldenBalls": "29,39,40"
+    },
+    {
+      "id": "1",
+      "predDate": "2026-03-06",
+      "sourceHour": "22",
+      "targetHour": "23",
+      "goldenBalls": "52,62,3"
+    },
+    {
+      "id": "2",
+      "predDate": "2026-03-05",
+      "sourceHour": "07",
+      "targetHour": "08",
+      "goldenBalls": "10,26,12"
+    },
+    {
+      "id": "3",
+      "predDate": "2026-03-05",
+      "sourceHour": "08",
+      "targetHour": "09",
+      "goldenBalls": "79,39,47"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpredDate\tsourceHour\ttargetHour\tgoldenBalls\n90009\t2026-03-10\t21\t22\t70,23,35\n90010\t2026-03-10\t22\t23\t18,38,47\n90007\t2026-03-09\t21\t22\t48,69,71\n90008\t2026-03-09\t22\t23\t40,58,12\n60006\t2026-03-08\t19\t20\t54,79,69\n60003\t2026-03-07\t18\t19\t19,32,70\n4\t2026-03-06\t07\t08\t29,39,40\n1\t2026-03-06\t22\t23\t52,62,3\n2\t2026-03-05\t07\t08\t10,26,12\n3\t2026-03-05\t08\t09\t79,39,47\n",
+  "stderr": "",
+  "execution_time_ms": 1601
+}
