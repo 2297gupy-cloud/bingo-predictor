@@ -990,6 +990,43 @@ export default function AiStrategyTab() {
                 />
               </div>
               
+              {/* 該日期各時段總覽 */}
+              {analysisHistoryData.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-border/20">
+                  <p className="text-[10px] text-muted-foreground mb-1.5">該日期各時段總覽：</p>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-1">
+                    {slots.map(slot => {
+                      const record = analysisHistoryData.find((r: any) => r.sourceHour === slot.source);
+                      return (
+                        <div
+                          key={slot.source}
+                          className="border border-border/20 rounded p-1 bg-background/50 text-center cursor-pointer hover:bg-background/70 transition-colors"
+                          onClick={() => {
+                            if (record?.aiPrediction) {
+                              const text = `${analysisHistoryDate} ${slot.source}時 整點參考：${record.aiPrediction.map((n: number) => String(n).padStart(2, "0")).join(" ")}`;
+                              navigator.clipboard.writeText(text).then(() => {
+                                toast.success(`已複製 ${slot.source} 時段數據`);
+                              });
+                            }
+                          }}
+                        >
+                          <div className="text-[9px] font-mono-num text-muted-foreground mb-0.5">{slot.source}時</div>
+                          {record?.aiPrediction && record.aiPrediction.length > 0 ? (
+                            <div className="flex gap-0.5 justify-center flex-wrap">
+                              {record.aiPrediction.map((n: number) => (
+                                <GoldenBall key={n} number={n} size="xs" />
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-[8px] text-muted-foreground/50">無數據</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
               {/* 分析紀錄列表 */}
               {analysisHistoryLoading ? (
                 <div className="flex items-center justify-center py-4">
