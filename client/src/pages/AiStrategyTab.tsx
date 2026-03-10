@@ -998,19 +998,30 @@ export default function AiStrategyTab() {
               ) : analysisHistoryData && analysisHistoryData.length > 0 ? (
                 <div className="space-y-1 max-h-64 overflow-y-auto">
                   {analysisHistoryData.map((record: any, idx: number) => (
-                    <div key={idx} className="text-[10px] border border-border/20 rounded p-1.5 bg-background/50">
-                      <div className="flex justify-between items-start gap-2">
-                        <div className="flex-1">
-                          <div className="font-medium text-foreground">
-                            {record.date} {record.sourceHour}時 → {record.targetHour}時
-                          </div>
-                          <div className="text-muted-foreground mt-0.5">
-                            AI 預測：{record.aiPrediction.map((n: number) => String(n).padStart(2, "0")).join(", ")}
-                          </div>
-                          <div className="text-muted-foreground mt-0.5">
-                            命中：{record.hitCount}/{record.totalDraws} 期（{Math.round(record.hitRate)}%）
-                          </div>
-                        </div>
+                    <div key={idx} className="border border-border/20 rounded p-1.5 bg-background/50">
+                      <div className="font-medium text-foreground mb-1.5 text-[10px]">
+                        {record.date} {record.sourceHour}時 → {record.targetHour}時 | AI 預測：{record.aiPrediction.map((n: number) => String(n).padStart(2, "0")).join(" ")}
+                      </div>
+                      <div className="space-y-0.5">
+                        {record.verification && record.verification.map((item: any, vidx: number) => {
+                          const isHit = item.isHit;
+                          const allHit = isHit && item.hits.length === 3;
+                          const hitStr = isHit 
+                            ? item.hits.map((n: number) => `*${String(n).padStart(2, "0")}`).join("") + (allHit ? "【三星入袋】⭐" : "")
+                            : "未中獎";
+                          return (
+                            <div key={vidx} className={cn("text-[10px] flex items-center justify-between", isHit ? "text-green-400" : "text-muted-foreground")}>
+                              <span className="font-mono-num">
+                                [{item.term}] {item.time} 115013{String(item.term).padStart(2, "0")}
+                              </span>
+                              <span className="font-mono-num">{hitStr}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-1 pt-1 border-t border-border/20 flex justify-between text-[10px] text-muted-foreground">
+                        <span>命中：{record.hitCount}/{record.totalDraws} 期</span>
+                        <span>命中率：{Math.round(record.hitRate)}%</span>
                       </div>
                     </div>
                   ))}

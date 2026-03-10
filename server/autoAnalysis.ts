@@ -64,7 +64,7 @@ export async function runDailyAutoAnalysis(dateStr: string) {
 }
 
 /**
- * 查詢過去 N 天的 AI 分析紀錄
+ * 查詢過去 N 天的 AI 分析紀錄（驗證記錄格式）
  */
 export async function getAnalysisRecords(
   endDate: string,
@@ -96,7 +96,7 @@ export async function getAnalysisRecords(
       )
       .orderBy(aiPredictions.predDate, aiPredictions.sourceHour);
 
-    // 為每個預測查詢實際開獎號碼
+    // 為每個預測查詢實際開獎號碼並生成驗證記錄
     const records = await Promise.all(
       predictions.map(async (pred) => {
         // 查詢目標時段的開獎號碼
@@ -116,32 +116,35 @@ export async function getAnalysisRecords(
           )
           .orderBy(bingoDraws.drawTerm);
 
-        // 計算命中數
+        // 計算每期的命中情況（類似驗證結果表）
         const goldenBalls = pred.goldenBalls
           .split(",")
           .map((n) => parseInt(n, 10));
-        let hitCount = 0;
 
-        draws.forEach((draw) => {
+        const verification = draws.map((draw) => {
           const numbers = draw.numbers.split(",").map((n) => parseInt(n, 10));
-          goldenBalls.forEach((ball) => {
-            if (numbers.includes(ball)) {
-              hitCount++;
-            }
-          });
+          const hits = goldenBalls.filter((ball) => numbers.includes(ball));
+          const missed = goldenBalls.filter((ball) => !numbers.includes(ball));
+
+          return {
+            term: draw.drawTerm,
+            time: draw.drawTime,
+            hits: hits,
+            missed: missed,
+            isHit: hits.length > 0,
+          };
         });
+
+        // 計算總命中數
+        const hitCount = verification.filter((v) => v.isHit).length;
 
         return {
           date: pred.predDate,
           sourceHour: pred.sourceHour,
           targetHour: pred.targetHour,
           aiPrediction: goldenBalls,
-          actualDraws: draws.map((d) => ({
-            term: d.drawTerm,
-            time: d.drawTime,
-            numbers: d.numbers.split(",").map((n) => parseInt(n, 10)),
-          })),
-          hitCount,
+          verification: verification,
+          hitCount: hitCount,
           totalDraws: draws.length,
           hitRate: draws.length > 0 ? (hitCount / draws.length) * 100 : 0,
         };
