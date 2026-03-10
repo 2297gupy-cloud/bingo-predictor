@@ -980,14 +980,84 @@ export default function AiStrategyTab() {
           
           {showAnalysisHistory && (
             <div className="mt-2 space-y-1.5">
-              {/* 日期選擇 */}
-              <div className="flex gap-1 items-center">
-                <Input
-                  type="date"
-                  value={analysisHistoryDate}
-                  onChange={(e) => setAnalysisHistoryDate(e.target.value)}
-                  className="h-7 text-[10px]"
-                />
+              {/* 日期選擇 - 下拉菜單和日曆 */}
+              <div className="space-y-1.5">
+                {/* 過去 7 天下拉菜單 */}
+                <div className="flex gap-1 items-center">
+                  <label className="text-[9px] text-muted-foreground whitespace-nowrap">過去 7 天：</label>
+                  <select
+                    value={analysisHistoryDate}
+                    onChange={(e) => setAnalysisHistoryDate(e.target.value)}
+                    className="h-7 text-[10px] px-2 py-1 rounded border border-border/30 bg-background text-foreground flex-1"
+                  >
+                    {Array.from({ length: 7 }, (_, i) => {
+                      const date = new Date();
+                      date.setDate(date.getDate() - i);
+                      const dateStr = date.toISOString().split('T')[0];
+                      const dayName = ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
+                      return (
+                        <option key={dateStr} value={dateStr}>
+                          {dateStr} (週{dayName})
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+                
+                {/* 當月日曆選擇 */}
+                <div className="border border-border/20 rounded p-2 bg-background/50">
+                  <p className="text-[9px] text-muted-foreground mb-1.5 font-medium">當月日期：</p>
+                  <div className="grid grid-cols-7 gap-1">
+                    {(() => {
+                      const today = new Date();
+                      const year = today.getFullYear();
+                      const month = today.getMonth();
+                      const firstDay = new Date(year, month, 1);
+                      const lastDay = new Date(year, month + 1, 0);
+                      const daysInMonth = lastDay.getDate();
+                      const startingDayOfWeek = firstDay.getDay();
+                      
+                      const days = [];
+                      
+                      // 空白格子（月初前的日子）
+                      for (let i = 0; i < startingDayOfWeek; i++) {
+                        days.push(null);
+                      }
+                      
+                      // 月份的日子
+                      for (let i = 1; i <= daysInMonth; i++) {
+                        days.push(i);
+                      }
+                      
+                      return days.map((day, idx) => {
+                        if (day === null) {
+                          return <div key={`empty-${idx}`} className="h-6"></div>;
+                        }
+                        
+                        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const isSelected = analysisHistoryDate === dateStr;
+                        const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                        
+                        return (
+                          <button
+                            key={dateStr}
+                            onClick={() => setAnalysisHistoryDate(dateStr)}
+                            className={cn(
+                              "h-6 text-[9px] rounded border transition-colors",
+                              isSelected
+                                ? "bg-amber-500/30 border-amber-500/50 text-foreground font-medium"
+                                : isToday
+                                ? "border-border/50 bg-background/70 text-foreground"
+                                : "border-border/20 bg-background/30 text-muted-foreground hover:bg-background/50"
+                            )}
+                          >
+                            {day}
+                          </button>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
               </div>
               
               {/* 該日期各時段總覽 */}
