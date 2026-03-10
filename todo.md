@@ -285,3 +285,22 @@
 - [x] 添加 font-semibold 使文字更醒目
 - [x] 保持外框閃爍效果 - border-2 border-amber-500 和 animate-border-pulse
 - [x] 測試效果 - 按鈕現在非常明顯，用戶可以輕鬆看到並點擊
+
+## Gemini API 整合 (2026-03-09)
+
+- [ ] 添加 GEMINI_API_KEY 環境變數
+- [ ] 實現後端 Gemini API 整合邏輯
+- [ ] 在黃金球右邊添加「AI測試」按鈕
+- [ ] 實現 AI 測試框架和功能
+- [ ] 測試 Gemini API 調用和回傳結果
+
+## Gemini API 整合 (2026-03-10)
+
+- [x] 添加 GEMINI_API_KEY 環境變數
+- [x] 創建 geminiAnalysis.ts 模塊
+- [x] 實現 Gemini API 調用邏輯
+- [x] 在 routers.ts 中添加 aiGeminiTest 路由
+- [x] 在前端添加「AI測試」按鈕（紫色邊框，Sparkles 圖標）
+- [x] 實現 handleGeminiTest 函數
+- [x] 測試 AI 測試按鈕功能
+- [ ] 解決 Gemini API 配額限制問題（需要有效的 API 密鑰和計費方式）

@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef, useCallback } from "react";
+import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Copy, ClipboardCheck, ChevronLeft, ChevronRight, CalendarDays, Trash2 } from "lucide-react";
+import { Loader2, Brain, Zap, Clock, CheckCircle2, XCircle, Pencil, Copy, ClipboardCheck, ChevronLeft, ChevronRight, CalendarDays, Trash2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAiPredictions,
@@ -433,6 +434,7 @@ export default function AiStrategyTab() {
   const aiAnalyze = useAiAnalyze();
   const aiManualInput = useAiManualInput();
   const aiDeletePrediction = useAiDeletePrediction();
+  const geminiTest = trpc.bingo.aiGeminiTest.useMutation();
 
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [verifySlot, setVerifySlot] = useState<string | null>(null);
@@ -460,6 +462,21 @@ export default function AiStrategyTab() {
       toast.success(`AI 分析完成：${result.goldenBalls.map((n: number) => String(n).padStart(2, "0")).join(", ")}`);
     } catch (err: any) {
       toast.error(`AI 分析失敗：${err.message}`);
+    }
+  };
+
+  const handleGeminiTest = async (sourceHour: string) => {
+    try {
+      const result = await geminiTest.mutateAsync({ date: dateStr, sourceHour });
+      if (result.success) {
+        toast.success(`Gemini 分析完成：${result.goldenBalls.map((n: number) => String(n).padStart(2, "0")).join(", ")}`);
+        // 顯示分析結果
+        console.log("Gemini 分析結果:", result.analysis);
+      } else {
+        toast.error(`Gemini 分析失敗：${result.error}`);
+      }
+    } catch (err: any) {
+      toast.error(`Gemini 測試失敗：${err.message}`);
     }
   };
 
@@ -678,20 +695,36 @@ export default function AiStrategyTab() {
                 )}
               </span>
             </div>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => handleAiAnalyze(effectiveSlot)}
-              disabled={aiAnalyze.isPending}
-              className="gap-1.5 border-2 border-amber-500 text-sm px-3 py-2 hover:bg-amber-500/10 animate-border-pulse hover:animate-none font-semibold"
-            >
-              {aiAnalyze.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Brain className="h-4 w-4" />
-              )}
-              AI分析
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleAiAnalyze(effectiveSlot)}
+                disabled={aiAnalyze.isPending}
+                className="gap-1.5 border-2 border-amber-500 text-sm px-3 py-2 hover:bg-amber-500/10 animate-border-pulse hover:animate-none font-semibold"
+              >
+                {aiAnalyze.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Brain className="h-4 w-4" />
+                )}
+                AI分析
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleGeminiTest(effectiveSlot)}
+                disabled={geminiTest.isPending}
+                className="gap-1.5 border-2 border-purple-500 text-sm px-3 py-2 hover:bg-purple-500/10 animate-border-pulse hover:animate-none font-semibold"
+              >
+                {geminiTest.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                AI測試
+              </Button>
+            </div>
           </div>
 
           {/* Golden balls display */}
