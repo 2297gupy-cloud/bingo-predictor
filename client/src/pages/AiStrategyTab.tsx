@@ -473,6 +473,13 @@ export default function AiStrategyTab() {
     { enabled: showAnalysisHistory }
   );
 
+  // 當日期改變且分析紀錄展開時，自動更新查詢日期
+  useEffect(() => {
+    if (showAnalysisHistory) {
+      setAnalysisHistoryDate(dateStr);
+    }
+  }, [dateStr, showAnalysisHistory]);
+
   useEffect(() => {
     if (analysisRecordsQuery.isLoading) {
       setAnalysisHistoryLoading(true);
@@ -529,12 +536,13 @@ export default function AiStrategyTab() {
       // 模擬進度更新（每個時段分析需要時間）
       const progressInterval = setInterval(() => {
         setBatchAnalysisProgress(prev => {
-          if (prev.current < 15) {
+          if (prev.current < 16) {
             const slots = ['07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'];
+            const nextCurrent = prev.current + 1;
             return {
-              current: prev.current + 1,
+              current: nextCurrent,
               total: 16,
-              currentSlot: slots[prev.current + 1] || '22'
+              currentSlot: slots[nextCurrent] || '22'
             };
           }
           return prev;

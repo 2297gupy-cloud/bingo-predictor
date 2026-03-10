@@ -87,3 +87,55 @@ describe("Batch Analysis Configuration", () => {
     });
   });
 });
+
+
+// 測試進度更新邏輯
+describe("Progress Update Logic", () => {
+  it("should update progress correctly from 0 to 16", () => {
+    let progress = { current: 0, total: 16, currentSlot: '07' };
+    const slots = ['07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'];
+    
+    // 模擬進度更新 (修復後的邏輯)
+    for (let i = 0; i < 16; i++) {
+      if (progress.current < 16) {
+        const nextCurrent = progress.current + 1;
+        progress = {
+          current: nextCurrent,
+          total: 16,
+          currentSlot: slots[nextCurrent] || '22'
+        };
+      }
+    }
+    
+    // 驗證最終進度達到 16/16
+    expect(progress.current).toBe(16);
+    expect(progress.currentSlot).toBe('22');
+  });
+
+  it("should not update progress beyond 16", () => {
+    let progress = { current: 16, total: 16, currentSlot: '22' };
+    const slots = ['07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'];
+    
+    // 嘗試更新超過 16
+    if (progress.current < 16) {
+      const nextCurrent = progress.current + 1;
+      progress = {
+        current: nextCurrent,
+        total: 16,
+        currentSlot: slots[nextCurrent] || '22'
+      };
+    }
+    
+    // 驗證進度不變
+    expect(progress.current).toBe(16);
+  });
+
+  it("should correctly map slot indices to hour labels", () => {
+    const slots = ['07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'];
+    
+    // 驗證索引對應關係
+    for (let i = 0; i < slots.length; i++) {
+      expect(slots[i]).toBe(String(7 + i).padStart(2, '0'));
+    }
+  });
+});
