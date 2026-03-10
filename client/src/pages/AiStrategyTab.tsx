@@ -999,22 +999,35 @@ export default function AiStrategyTab() {
                 <div className="space-y-1 max-h-64 overflow-y-auto">
                   {analysisHistoryData.map((record: any, idx: number) => (
                     <div key={idx} className="border border-border/20 rounded p-1.5 bg-background/50">
-                      <div className="font-medium text-foreground mb-1.5 text-[10px]">
-                        {record.date} {record.sourceHour}時 → {record.targetHour}時 | AI 預測：{record.aiPrediction.map((n: number) => String(n).padStart(2, "0")).join(" ")}
+                      <div className="font-medium text-foreground mb-1.5 text-[10px] flex items-center gap-1">
+                        <span>{record.date} {record.sourceHour}時 → {record.targetHour}時 | AI 預測：</span>
+                        <div className="flex gap-0.5">
+                          {record.aiPrediction.map((n: number) => (
+                            <GoldenBall key={n} number={n} size="xs" />
+                          ))}
+                        </div>
                       </div>
                       <div className="space-y-0.5">
                         {record.verification && record.verification.map((item: any, vidx: number) => {
                           const isHit = item.isHit;
                           const allHit = isHit && item.hits.length === 3;
-                          const hitStr = isHit 
-                            ? item.hits.map((n: number) => `*${String(n).padStart(2, "0")}`).join("") + (allHit ? "【三星入袋】⭐" : "")
-                            : "未中獎";
                           return (
                             <div key={vidx} className={cn("text-[10px] flex items-center gap-2", isHit ? "text-green-400" : "text-muted-foreground")}>
                               <span className="font-mono-num flex-shrink-0">
                                 [{item.term}] {item.time}
                               </span>
-                              <span className="font-mono-num text-right">{hitStr}</span>
+                              <div className="flex items-center gap-0.5">
+                                {isHit ? (
+                                  <>
+                                    {item.hits.map((n: number) => (
+                                      <GoldenBall key={n} number={n} size="xs" />
+                                    ))}
+                                    {allHit && <span className="text-green-400">【三星入袋】⭐</span>}
+                                  </>
+                                ) : (
+                                  <span>未中獎</span>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
