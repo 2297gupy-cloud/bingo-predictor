@@ -235,6 +235,18 @@ export const appRouter = router({
         return result;
       }),
 
+    // 查詢過去 N 天的 AI 分析紀錄
+    analysisRecords: publicProcedure
+      .input(z.object({
+        endDate: z.string().optional(),
+        days: z.number().min(1).max(30).default(7),
+      }))
+      .query(async ({ input }) => {
+        const { getAnalysisRecords } = await import('./autoAnalysis');
+        const endDate = input.endDate || new Date().toISOString().split('T')[0];
+        return await getAnalysisRecords(endDate, input.days);
+      }),
+
     // 歷史紀錄（分頁）
     history: publicProcedure
       .input(

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -449,6 +449,27 @@ export default function AiStrategyTab() {
   const [parsedBalls, setParsedBalls] = useState<number[]>([]);
   // AI 計算面板狀態
   const [showAiCalculator, setShowAiCalculator] = useState(false);
+  const [showAnalysisHistory, setShowAnalysisHistory] = useState(false);
+  const [analysisHistoryDate, setAnalysisHistoryDate] = useState(dateStr);
+  const [analysisHistoryData, setAnalysisHistoryData] = useState<any[]>([]);
+  const [analysisHistoryLoading, setAnalysisHistoryLoading] = useState(false);
+
+  const analysisRecordsQuery = trpc.bingo.analysisRecords.useQuery(
+    { endDate: analysisHistoryDate, days: 7 },
+    { enabled: showAnalysisHistory }
+  );
+
+  useEffect(() => {
+    if (analysisRecordsQuery.isLoading) {
+      setAnalysisHistoryLoading(true);
+    } else if (analysisRecordsQuery.data) {
+      setAnalysisHistoryData(analysisRecordsQuery.data);
+      setAnalysisHistoryLoading(false);
+    } else if (analysisRecordsQuery.isError) {
+      setAnalysisHistoryLoading(false);
+      toast.error("查詢分析紀錄失敗");
+    }
+  }, [analysisRecordsQuery.isLoading, analysisRecordsQuery.data, analysisRecordsQuery.isError]);
 
   const currentSlot = slotsData?.currentSlot;
   const slots = slotsData?.slots || [];
@@ -944,6 +965,62 @@ export default function AiStrategyTab() {
                   ? `${effectiveVerifySlot.padStart(2, "0")} 時段尚無預測資料或開獎資料`
                   : "請先選擇驗證時段"}
               </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 過去 7 天 AI 分析紀錄 */}
+      <Card className="border-border/30">
+        <CardContent className="p-2 sm:p-3">
+          <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowAnalysisHistory(!showAnalysisHistory)}>
+            <span className="text-xs font-medium text-foreground">過去 7 天 AI 分析紀錄</span>
+            <ChevronRight className={cn("h-4 w-4 transition-transform", showAnalysisHistory && "rotate-90")} />
+          </div>
+          
+          {showAnalysisHistory && (
+            <div className="mt-2 space-y-1.5">
+              {/* 日期選擇 */}
+              <div className="flex gap-1 items-center">
+                <Input
+                  type="date"
+                  value={analysisHistoryDate}
+                  onChange={(e) => setAnalysisHistoryDate(e.target.value)}
+                  className="h-7 text-[10px]"
+                />
+              </div>
+              
+              {/* 分析紀錄列表 */}
+              {analysisHistoryLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              ) : analysisHistoryData && analysisHistoryData.length > 0 ? (
+                <div className="space-y-1 max-h-64 overflow-y-auto">
+                  {analysisHistoryData.map((record: any, idx: number) => (
+                    <div key={idx} className="text-[10px] border border-border/20 rounded p-1.5 bg-background/50">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1">
+                          <div className="font-medium text-foreground">
+                            {record.date} {record.sourceHour}時 → {record.targetHour}時
+                          </div>
+                          <div className="text-muted-foreground mt-0.5">
+                            AI 預測：{record.aiPrediction.map((n: number) => String(n).padStart(2, "0")).join(", ")}
+                          </div>
+                          <div className="text-muted-foreground mt-0.5">
+                            命中：{record.hitCount}/{record.totalDraws} 期（{Math.round(record.hitRate)}%）
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1 py-3">
+                  <XCircle className="h-4 w-4 text-muted-foreground/30" />
+                  <p className="text-[10px] text-muted-foreground/50">暫無分析紀錄</p>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
