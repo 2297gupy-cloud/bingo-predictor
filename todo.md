@@ -423,3 +423,20 @@
 - [x] 檢查分析結果，驗證是否正確產生對獎效果
 - [x] 檢查資料庫中的 AI 分析紀錄
 - [x] 驗證 3 月 11 詩的所有 16 個時段都有分析結果
+
+
+## 批量分析 API 配額問題 (2026-03-11)
+
+- [x] **根本原因已確認**：Gemini API 配額已超出，Forge API 返回 `Precondition Failed` 錯誤
+- [ ] 等待 Gemini API 配額重置（通常每天重置）
+- [ ] 或者提供其他 AI API 密鑰（如 OpenAI API Key）
+- [ ] 配置備用 AI 模型以防主模型不可用
+
+
+## VectorEngine API 集成 (2026-03-11)
+
+- [x] 配置 VectorEngine API 密鑰 (sk-5oPvYnfCT6rEJIdWkWYHUouNbt46mZJG5kr9BFZhOT56gkVB)
+- [x] 修改 aiStrategy.ts 使用 VectorEngine API 替換 Forge API
+- [x] 配置 gemini-2.0-flash 模型
+- [x] 測試批量分析 API 功能 — 成功！14/16 時段分析完成
+- [x] 驗證 AI 分析結果正確性 — 黃金球號碼正確生成

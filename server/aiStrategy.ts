@@ -4,17 +4,17 @@ import { bingoDraws, aiPredictions, type AiPrediction } from "../drizzle/schema"
 import { ENV } from "./_core/env";
 import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
-import { createPatchedFetch } from "./_core/patchedFetch";
 
 // ============ Forge API Setup ============
 
 function getForgeModel() {
+  // Use VectorEngine API with Gemini 2.0 Flash
+  console.log("[getForgeModel] Using VectorEngine API with gemini-2.0-flash");
   const openai = createOpenAI({
-    apiKey: process.env.BUILT_IN_FORGE_API_KEY,
-    baseURL: `${process.env.BUILT_IN_FORGE_API_URL}/v1`,
-    fetch: createPatchedFetch(fetch),
+    apiKey: process.env.VECTORENGINE_API_KEY,
+    baseURL: "https://api.vectorengine.ai/v1",
   });
-  return openai.chat("gemini-2.5-flash");
+  return openai.chat("gemini-2.0-flash");
 }
 
 // ============ Time Slot Helpers ============
@@ -201,6 +201,7 @@ export async function callAiForPrediction(
   const model = getForgeModel();
   const prompt = buildAnalysisPrompt(draws, sourceLabel, dateStr);
 
+  console.log(`[callAiForPrediction] Calling AI model for ${sourceLabel}...`);
   const { text } = await generateText({
     model,
     messages: [{ role: "user", content: prompt }],
@@ -411,7 +412,13 @@ export async function runAiAnalysis(dateStr: string, sourceHour: string): Promis
     throw new Error(`Not enough draws for hour ${sourceHour}: only ${draws.length} found (need at least 5)`);
   }
 
-  const result = await callAiForPrediction(draws, slot.label, dateStr);
+  let result;
+  try {
+    result = await callAiForPrediction(draws, slot.label, dateStr);
+  } catch (err) {
+    console.error(`[runAiAnalysis] AI call failed for ${sourceHour}:`, err instanceof Error ? err.message : String(err));
+    throw err;
+  }
   
   // Save to database
   await saveAiPrediction(
@@ -443,11 +450,14 @@ export async function batchAnalyzeDate(dateStr: string): Promise<{
   }>;
 }> {
   const results = [];
+  console.log(`[batchAnalyzeDate] Starting analysis for date: ${dateStr}`);
 
   // Analyze each hour slot (07-22, skip 23 as it has no next period)
   for (const slot of HOUR_SLOTS) {
     try {
+      console.log(`[batchAnalyzeDate] Analyzing slot ${slot.source}...`);
       const result = await runAiAnalysis(dateStr, slot.source);
+      console.log(`[batchAnalyzeDate] Slot ${slot.source} success: ${result.goldenBalls.join(',')}`);
       results.push({
         sourceHour: slot.source,
         success: true,
@@ -455,14 +465,17 @@ export async function batchAnalyzeDate(dateStr: string): Promise<{
         reasoning: result.reasoning,
       });
     } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      console.error(`[batchAnalyzeDate] Slot ${slot.source} failed: ${errorMsg}`);
       results.push({
         sourceHour: slot.source,
         success: false,
-        error: err instanceof Error ? err.message : "Unknown error",
+        error: errorMsg,
       });
     }
   }
 
+  console.log(`[batchAnalyzeDate] Completed for date: ${dateStr}. Success: ${results.filter(r => r.success).length}/${results.length}`);
   return {
     date: dateStr,
     results,
